@@ -23,7 +23,7 @@ public:
     void stop();
 private:
     struct event_base* evbase;
-    std::list<NetSession> sessions;
+    std::list<NetSession*> sessions;
     bool running = true;
 };
 

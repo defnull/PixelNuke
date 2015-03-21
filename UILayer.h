@@ -26,7 +26,7 @@ private:
     GLuint texId;
     GLuint texPBO1;
     GLuint texPBO2;
-    GLubyte *texData;
+    GLubyte *texData = NULL;
 };
 
 #endif	/* UILAYER_H */

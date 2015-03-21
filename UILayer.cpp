@@ -7,6 +7,7 @@
 
 #include "UILayer.h"
 #include <cstring>
+#include <cstdio>
 
 UILayer::UILayer(GLuint width, GLuint height, bool alpha) :
 width(width), height(height) {

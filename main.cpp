@@ -13,16 +13,13 @@
 using namespace std;
 
 int main(int argc, char** argv) {
-        printf("bar");
+    auto *win = new UIWindow();
+    auto *net = new Net();
+    net->watch(8080);
 
-    auto win = UIWindow();
-    auto net = Net();
-    net.watch(8080);
-    
-    //std::thread netThread (&Net::loop, net);
-    //netThread.detach();
-    printf("bar");
-    win.loop();
+    std::thread netThread (&Net::loop, net);
+    netThread.detach();
+    win->loop();
     return 0;
 }
 

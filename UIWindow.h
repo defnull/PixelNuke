@@ -22,6 +22,7 @@ private:
     UILayer *pxLayer;
     UILayer *metaLayer;
     UILayer *guiLayer;
+    Uint32 maxfps = 30;
 };
 
 #endif	/* UIWINDOW_H */

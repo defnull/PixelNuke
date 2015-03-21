@@ -5,6 +5,8 @@ SOURCES := $(wildcard *.cpp)
 OBJECTS := $(SOURCES:.cpp=.o)
 EXECUTABLE := pixelnuke
 
+.PHONY: all clean run
+
 all: $(SOURCES) $(EXECUTABLE)
     
 $(EXECUTABLE): $(OBJECTS) 
@@ -16,3 +18,9 @@ $(EXECUTABLE): $(OBJECTS)
 
 clean:
 	-rm *.o *.d $(EXECUTABLE)
+
+run: all
+	./$(EXECUTABLE)
+
+debug: all
+	gdb -x run ./$(EXECUTABLE)

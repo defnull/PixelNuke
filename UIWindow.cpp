@@ -21,6 +21,7 @@ UIWindow::UIWindow() {
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE); //|SDL_WINDOW_BORDERLESS);
 
     SDL_GL_CreateContext(window);
+
     glewInit();
 
     //glShadeModel(GL_FLAT);            // shading mathod: GL_SMOOTH or GL_FLAT
@@ -36,7 +37,6 @@ UIWindow::UIWindow() {
     pxLayer = new UILayer(1024, 1024, false);
     metaLayer = new UILayer(1024, 1024, true);
     guiLayer = new UILayer(1024, 1024, true);
-
 }
 
 UIWindow::UIWindow(const UIWindow& orig) {
@@ -51,24 +51,30 @@ UIWindow::~UIWindow() {
 void UIWindow::loop() {
     SDL_Event event;
     bool done = false;
-    printf("foo");
 
-    while (!done && SDL_WaitEvent(&event)) {
-        printf("%d", event.type);
-        switch (event.type) {
-            case SDL_USEREVENT:
-                break;
-            case SDL_KEYDOWN:
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-                break;
-            case SDL_QUIT:
-                done = true;
-                break;
-            default:
-                break;
+    while (!done) {
+        Uint32 ticks = SDL_GetTicks();
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_USEREVENT:
+                    break;
+                case SDL_KEYDOWN:
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    break;
+                case SDL_QUIT:
+                    done = true;
+                    break;
+                default:
+                    break;
+            }
         }
         draw();
+        SDL_GL_SwapWindow(window);
+        Uint32 dt = SDL_GetTicks() - ticks;
+        if(dt < 1000/maxfps) {
+            SDL_Delay(1000/maxfps - dt);
+        }
     }
 }
 
@@ -91,6 +97,4 @@ void UIWindow::draw() {
     pxLayer->draw();
     metaLayer->draw();
     guiLayer->draw();
-
-    SDL_GL_SwapWindow(window);
 }
