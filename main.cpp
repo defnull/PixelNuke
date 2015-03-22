@@ -6,16 +6,22 @@
  */
 
 #include <cstdlib>
+#include <exception>
+#include <iostream>
 #include <thread>
 
-#include "UIWindow.h"
 #include "Net.h"
 #include "PixelServer.h"
-using namespace std;
+#include "UIWindow.h"
 
-int main(int argc, char** argv) {
-    auto *px = new PixelServer();
-    px->run();
-    return 0;
+int main(int argc, char* argv[]) {
+    try {
+        PixelServer px;
+        px.run();
+    } catch (std::exception const& x) {
+        std::cerr << "Exception: " << x.what() << std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 
