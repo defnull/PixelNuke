@@ -50,7 +50,7 @@ void Net::remove_dead_sessions()
 int Net::watch(int port) {
     evutil_socket_t listener;
 
-    struct sockaddr_in6 addr;
+    sockaddr_in6 addr;
     listener = socket(AF_INET6, SOCK_STREAM, 0);
     memset(&addr, 0, sizeof (addr));
     addr.sin6_family = AF_INET6;
@@ -64,7 +64,7 @@ int Net::watch(int port) {
     evutil_make_socket_nonblocking(listener);
     evutil_make_listen_socket_reuseable(listener);
 
-    if (bind(listener, (struct sockaddr*) &addr, sizeof (addr)) < 0)
+    if (bind(listener, (sockaddr*) &addr, sizeof (addr)) < 0)
         return 1;
 
     if (listen(listener, 16) < 0)

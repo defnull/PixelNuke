@@ -13,8 +13,8 @@
 #include <ctime>
 #include "utils.h"
 
-static const struct timeval DEAD_TIMEOUT = {.tv_sec = 10, .tv_usec = 0};
-static const struct timeval READ_TIMEOUT = {.tv_sec = 60, .tv_usec = 0};
+static const timeval DEAD_TIMEOUT = {.tv_sec = 10, .tv_usec = 0};
+static const timeval READ_TIMEOUT = {.tv_sec = 60, .tv_usec = 0};
 #define SESSION_NEW   3
 #define SESSION_ALIVE 2
 #define SESSION_DYING 1
@@ -29,16 +29,15 @@ public:
     ~NetSession();
     int mode = SESSION_NEW;
 private:
-    void accept(evutil_socket_t sock);
     void onReadable();
     void onWriteable();
     void onError(short int which);
     void error(const char* msg);
     void close();
     Net *net;
-    struct bufferevent *bevent;
+    bufferevent *bevent;
     sockaddr_storage addr;
-    struct timeval timeout = {.tv_sec=60, .tv_usec=0};
+    timeval timeout = {.tv_sec=60, .tv_usec=0};
 };
 
 #endif	/* NETSESSION_H */

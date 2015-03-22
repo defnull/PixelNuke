@@ -12,44 +12,38 @@
 #include <event2/bufferevent.h>
 #include <string>
 
-NetSession::NetSession(Net *net, evutil_socket_t sock) : net(net) {
-    // accept is part of initialization which establishes the
-    // class invariant: an allocated and valid bufferevent socket
-    this->accept(sock);
-}
-
-NetSession::~NetSession() {
-    bufferevent_free(bevent);
-}
-
-void NetSession::accept(evutil_socket_t sockfd) {
+NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
     socklen_t slen = sizeof (addr);
-    int fd;
+    int csockfd;
     
-    if ((fd = ::accept(sockfd, (sockaddr*) &addr, &slen)) < 0) {
+    if ((csockfd = ::accept(sockfd, (sockaddr*) &addr, &slen)) < 0) {
         mode = SESSION_DEAD;
         return;
     }
     
     mode = SESSION_ALIVE;
 
-    evutil_make_socket_nonblocking(fd);
-    bevent = bufferevent_socket_new(this->net->getBase(), fd, BEV_OPT_CLOSE_ON_FREE);
+    evutil_make_socket_nonblocking(csockfd);
+    bevent = bufferevent_socket_new(this->net->getBase(), csockfd, BEV_OPT_CLOSE_ON_FREE);
 
     bufferevent_setcb(bevent,
-            [] (struct bufferevent *bev, void *ctx) {
+            [&] (bufferevent *bev, void *ctx) {
                 static_cast<NetSession*> (ctx)->onReadable();
             },
-    [] (struct bufferevent *bev, void *ctx) {
+    [&] (bufferevent *bev, void *ctx) {
         static_cast<NetSession*> (ctx)->onWriteable();
     },
-    [] (struct bufferevent *bev, short int which, void *ctx) {
+    [&] (bufferevent *bev, short int which, void *ctx) {
         static_cast<NetSession*> (ctx)->onError(which);
     }
     , this);
     bufferevent_setwatermark(bevent, EV_READ, 0, 1024);
     bufferevent_set_timeouts(bevent, &timeout, NULL);
     bufferevent_enable(bevent, EV_READ | EV_WRITE);
+}
+
+NetSession::~NetSession() {
+    bufferevent_free(bevent);
 }
 
 void NetSession::onReadable() {
@@ -105,7 +99,7 @@ void NetSession::close() {
             bufferevent_set_timeouts(bevent, &DEAD_TIMEOUT, &DEAD_TIMEOUT);
             bufferevent_setcb(bevent, NULL,
                     // Write Callback
-                    [] (struct bufferevent *bev, void *ctx) {
+                    [] (bufferevent *bev, void *ctx) {
                         if (evbuffer_get_length(bufferevent_get_output(bev)) == 0) {
                             NetSession *me = static_cast<NetSession*> (ctx);
                             bufferevent_free(me->bevent);
@@ -113,7 +107,7 @@ void NetSession::close() {
                         }
                     },
             // Error callback
-            [] (struct bufferevent *bev, short int which, void *ctx) {
+            [] (bufferevent *bev, short int which, void *ctx) {
                 NetSession *me = static_cast<NetSession*> (ctx);
                 bufferevent_free(me->bevent);
                 me->mode = SESSION_DEAD;
