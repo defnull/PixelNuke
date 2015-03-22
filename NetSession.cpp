@@ -65,6 +65,7 @@ void NetSession::onReadable() {
             printf("R %d %d", x, y);
         } else if (m == 3 && t2 - t1 == 6) {
             c |= 0xff000000;
+            
             printf("PX %u %u %x", x, y, c);
         } else if (m == 3 && t2 - t1 == 8) {
             // #rrggbbaa -> #aarrggbb

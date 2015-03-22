@@ -9,6 +9,7 @@
 #define	UIWINDOW_H
 #include <SDL2/SDL.h>
 #include "UILayer.h"
+#include <vector>
 
 class UIWindow {
 public:
@@ -17,11 +18,11 @@ public:
     virtual ~UIWindow();
     void loop();
     void draw();
+    void stop();
+    void addLayer(const UILayer&);
 private:
     SDL_Window* window;
-    UILayer *pxLayer;
-    UILayer *metaLayer;
-    UILayer *guiLayer;
+    std::vector<UILayer*> layers;
     Uint32 maxfps = 30;
 };
 

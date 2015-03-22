@@ -16,12 +16,9 @@ Net::Net() {
     evthread_use_pthreads();
     event_enable_debug_mode();
     evbase = event_base_new();
-
-    watch(8080);
 }
 
 void Net::loop() {
-    printf("foo\n");
     event_base_dispatch(evbase);
 }
 
@@ -63,18 +60,16 @@ int Net::watch(int port) {
                 NetSession *s = new NetSession(net);
                 s->accept(listener);
                 net->sessions.push_back(s);
-                printf("%u\n", net->sessions.size());
                 net->sessions.remove_if([] (const NetSession * value) {
                     return value->mode == SESSION_DEAD;
                 });
-                printf("%u\n", net->sessions.size());
-  
             }, this);
     event_add(listener_event, NULL);
     return 0;
 }
 
-Net::Net(const Net& orig) {
+void Net::setCanvas(UIWindow canvas) {
+    this->canvas = canvas;
 }
 
 Net::~Net() {

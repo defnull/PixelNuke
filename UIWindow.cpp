@@ -32,20 +32,20 @@ UIWindow::UIWindow() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_2D);
-
-    pxLayer = new UILayer(1024, 1024, false);
-    metaLayer = new UILayer(1024, 1024, true);
-    guiLayer = new UILayer(1024, 1024, true);
+    glEnable(GL_TEXTURE_2D);    
 }
+
+void UIWindow::addLayer(const UILayer& layer) {
+    layers.push_back(layer);
+}
+
 
 UIWindow::UIWindow(const UIWindow& orig) {
 }
 
 UIWindow::~UIWindow() {
-    delete pxLayer;
-    delete metaLayer;
-    delete guiLayer;
+    
+
 }
 
 void UIWindow::loop() {
@@ -78,8 +78,14 @@ void UIWindow::loop() {
     }
 }
 
-void UIWindow::draw() {
+void UIWindow::stop() {
+    SDL_Event sdlevent;
+    sdlevent.type = SDL_QUIT;
+    SDL_PushEvent(&sdlevent);
+}
 
+
+void UIWindow::draw() {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
@@ -93,8 +99,8 @@ void UIWindow::draw() {
 
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-
-    pxLayer->draw();
-    metaLayer->draw();
-    guiLayer->draw();
+    
+    for(UILayer* layer: layers) {
+        layer->draw();
+    }    
 }

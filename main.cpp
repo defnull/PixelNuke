@@ -10,16 +10,12 @@
 
 #include "UIWindow.h"
 #include "Net.h"
+#include "PixelServer.h"
 using namespace std;
 
 int main(int argc, char** argv) {
-    auto *win = new UIWindow();
-    auto *net = new Net();
-    net->watch(8080);
-
-    std::thread netThread (&Net::loop, net);
-    netThread.detach();
-    win->loop();
+    auto *px = new PixelServer();
+    px->run();
     return 0;
 }
 

@@ -19,6 +19,31 @@ width(width), height(height) {
     allocate();
 }
 
+void UILayer::setPx(Uint32 x, Uint32 y, Uint32 rgba) {
+    if(x > texWidth || y > texHeight)
+        return;
+
+    GLubyte* ptr = texData + x * texWidth + y;
+    
+    GLubyte r = (rgba & 0xff000000) >> 24;
+    GLubyte g = (rgba & 0x00ff0000) >> 16;
+    GLubyte b = (rgba & 0x0000ff00) >> 8;
+    GLubyte a = (rgba & 0x000000ff) >> 0;
+
+    if(a == 0)
+    	return;
+    if (a < 0xff) {
+    	GLuint na = 0xff-a;
+    	r = (a * r + na * (ptr[0])) / 0xff;
+    	g = (a * g + na * (ptr[1])) / 0xff;
+    	b = (a * b + na * (ptr[2])) / 0xff;
+    }
+    ptr[0] = r;
+    ptr[1] = g;
+    ptr[2] = b;
+}
+
+
 void UILayer::allocate() {
     if (texData != NULL)
         cleanup();
