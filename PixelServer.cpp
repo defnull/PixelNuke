@@ -12,10 +12,10 @@ PixelServer::PixelServer() :
 pxLayer(1024, 1024, false),
 guiLayer(1024, 1024, true) {
     server = new Net();
-    window.addLayer(pxLayer);
+    window.addLayer(&pxLayer);
     server->watch(8080);
-
-    netThread (Net::loop, server);
+    
+    std::thread netThread ([&] {server->loop();});
     netThread.detach();
 }
 
@@ -28,7 +28,7 @@ void PixelServer::run() {
 }
 
 void PixelServer::stop() {
-    server.stop();
+    server->stop();
     window.stop();
 }
 

@@ -23,7 +23,6 @@ public:
 private:
     UIWindow window;
     Net *server;
-    std::thread netThread;
     
     UILayer pxLayer;
     UILayer guiLayer;    

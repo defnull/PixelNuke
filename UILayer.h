@@ -18,7 +18,7 @@ public:
     void draw();
     void allocate();
     void cleanup();
-    void setPx(Uint32 x, Uint32 y, Uint32 c);
+    void setPx(unsigned int x, unsigned int y, unsigned int c);
 private:
     GLuint width, height;
     GLuint texWidth;

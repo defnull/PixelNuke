@@ -35,7 +35,7 @@ UIWindow::UIWindow() {
     glEnable(GL_TEXTURE_2D);    
 }
 
-void UIWindow::addLayer(const UILayer& layer) {
+void UIWindow::addLayer(UILayer *layer) {
     layers.push_back(layer);
 }
 

@@ -19,7 +19,7 @@ public:
     void loop();
     void draw();
     void stop();
-    void addLayer(const UILayer&);
+    void addLayer(UILayer*);
 private:
     SDL_Window* window;
     std::vector<UILayer*> layers;

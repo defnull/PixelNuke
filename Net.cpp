@@ -68,10 +68,6 @@ int Net::watch(int port) {
     return 0;
 }
 
-void Net::setCanvas(UIWindow canvas) {
-    this->canvas = canvas;
-}
-
 Net::~Net() {
     stop();
 }

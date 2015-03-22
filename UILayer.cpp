@@ -19,7 +19,7 @@ width(width), height(height) {
     allocate();
 }
 
-void UILayer::setPx(Uint32 x, Uint32 y, Uint32 rgba) {
+void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
     if(x > texWidth || y > texHeight)
         return;
 
