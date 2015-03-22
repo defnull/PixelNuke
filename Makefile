@@ -14,7 +14,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 *.o: Makefile
 
--include *.p
+-include *.d
 
 clean:
 	-rm *.o *.d $(EXECUTABLE)
