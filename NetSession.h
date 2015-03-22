@@ -11,6 +11,7 @@
 #include <event2/bufferevent.h>
 #include <event2/bufferevent_struct.h>
 #include <ctime>
+#include <string>
 #include "utils.h"
 
 static const timeval DEAD_TIMEOUT = {.tv_sec = 10, .tv_usec = 0};
@@ -28,6 +29,8 @@ public:
     NetSession(Net *net, evutil_socket_t sock);
     ~NetSession();
     int mode = SESSION_NEW;
+    void send(std::string msg);
+    void send(const char *msg, size_t i);
 private:
     void onReadable();
     void onWriteable();
@@ -38,6 +41,7 @@ private:
     bufferevent *bevent;
     sockaddr_storage addr;
     timeval timeout = {.tv_sec=60, .tv_usec=0};
+
 };
 
 #endif	/* NETSESSION_H */

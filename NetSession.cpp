@@ -11,6 +11,7 @@
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
 #include <string>
+#include <glob.h>
 
 NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
     socklen_t slen = sizeof (addr);
@@ -50,24 +51,23 @@ void NetSession::onReadable() {
     char *line;
     size_t n;
     auto *input = bufferevent_get_input(bevent);
-    auto *output = bufferevent_get_output(bevent);
 
     while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
-        unsigned int y, x, m, c, t1, t2;
-        m = sscanf(line, "PX %u %u %n%8x%n", &x, &y, &t1, &c, &t2);
+        unsigned int x, y, c, t1, t2;
+        int m = sscanf(line, "PX %u %u %n%8x%n", &x, &y, &t1, &c, &t2);
         if (m == 2) {
             printf("R %d %d", x, y);
         } else if (m == 3 && t2 - t1 == 6) {
             c |= 0xff000000;
-            
             printf("PX %u %u %x", x, y, c);
         } else if (m == 3 && t2 - t1 == 8) {
             // #rrggbbaa -> #aarrggbb
             c = (c >> 8) + ((c & 0xff) << 24);
             printf("PX %d %d %x", x, y, c);
         }
-        evbuffer_add(output, line, n);
-        evbuffer_add(output, "\n", 1);
+
+        send(line, n);
+        send("\n", 1);
         delete line;
     }
 
@@ -120,4 +120,12 @@ void NetSession::close() {
 void NetSession::error(const char * msg) {
     evbuffer_add_printf(bufferevent_get_output(bevent), "ERR %s\n", msg);
     close();
+}
+
+void NetSession::send(std::string msg) {
+    send(msg.c_str(), msg.length());
+}
+
+void NetSession::send(const char *msg, size_t n) {
+    bufferevent_write(bevent, msg, n);
 }

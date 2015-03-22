@@ -26,7 +26,7 @@ public:
 private:
     void remove_dead_sessions();
     event_base* evbase;
-    std::vector<std::unique_ptr<NetSession>> sessions;
+    std::vector< std::unique_ptr<NetSession> > sessions;
     bool running = true;
 };
 
