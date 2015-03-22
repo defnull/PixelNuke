@@ -12,10 +12,10 @@
 #include <event2/bufferevent.h>
 #include <string>
 
-NetSession::NetSession(Net *net) : net(net) {
-}
-
-NetSession::NetSession(const NetSession& orig) {
+NetSession::NetSession(Net *net, evutil_socket_t sock) : net(net) {
+    // accept is part of initialization which establishes the
+    // class invariant: an allocated and valid bufferevent socket
+    this->accept(sock);
 }
 
 NetSession::~NetSession() {
@@ -26,7 +26,7 @@ void NetSession::accept(evutil_socket_t sockfd) {
     socklen_t slen = sizeof (addr);
     int fd;
     
-    if ((fd = ::accept(sockfd, (struct sockaddr*) &addr, &slen)) < 0) {
+    if ((fd = ::accept(sockfd, (sockaddr*) &addr, &slen)) < 0) {
         mode = SESSION_DEAD;
         return;
     }

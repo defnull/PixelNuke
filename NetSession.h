@@ -11,6 +11,7 @@
 #include <event2/bufferevent.h>
 #include <event2/bufferevent_struct.h>
 #include <ctime>
+#include "utils.h"
 
 static const struct timeval DEAD_TIMEOUT = {.tv_sec = 10, .tv_usec = 0};
 static const struct timeval READ_TIMEOUT = {.tv_sec = 60, .tv_usec = 0};
@@ -22,14 +23,13 @@ static const struct timeval READ_TIMEOUT = {.tv_sec = 60, .tv_usec = 0};
 
 class Net;
 
-class NetSession {
+class NetSession : NonCopyable {
 public:
-    NetSession(Net *net);
-    NetSession(const NetSession& orig);
-    virtual ~NetSession();
-    void accept(evutil_socket_t sock);
+    NetSession(Net *net, evutil_socket_t sock);
+    ~NetSession();
     int mode = SESSION_NEW;
 private:
+    void accept(evutil_socket_t sock);
     void onReadable();
     void onWriteable();
     void onError(short int which);

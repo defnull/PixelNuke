@@ -5,17 +5,22 @@
  * Created on March 20, 2015, 3:38 PM
  */
 
+#include <stdexcept>
+#include <algorithm>
+#include <cstring>
 #include "Net.h"
 #include "NetSession.h"
 #include <event2/event.h>
 #include <event2/event_struct.h>
 #include <event2/thread.h>
-#include <cstring>
 
 Net::Net() {
-    evthread_use_pthreads();
-    event_enable_debug_mode();
+    if (evthread_use_pthreads() != 0)
+        throw std::runtime_error("Could not set up libevent for use with Pthreads");
+    event_enable_debug_mode(); // FIXME: Expensive debugging checks
     evbase = event_base_new();
+    if (!evbase)
+        throw std::runtime_error("Could not create new event_base via libevent");
 }
 
 void Net::loop() {
@@ -30,8 +35,19 @@ struct event_base* Net::getBase() {
     return evbase;
 }
 
+void Net::remove_dead_sessions()
+{
+    auto new_end = std::remove_if(
+        sessions.begin(),
+        sessions.end(),
+        [] (std::unique_ptr<NetSession> const& value) {
+            return value->mode == SESSION_DEAD;
+        });
+    sessions.erase(new_end, sessions.end());
+}
+
+
 int Net::watch(int port) {
-    struct event *listener_event;
     evutil_socket_t listener;
 
     struct sockaddr_in6 addr;
@@ -54,15 +70,12 @@ int Net::watch(int port) {
     if (listen(listener, 16) < 0)
         return 1;
 
-    listener_event = event_new(evbase, listener,
+    auto* listener_event = event_new(evbase, listener,
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
-                Net *net = static_cast<Net*> (arg);
-                NetSession *s = new NetSession(net);
-                s->accept(listener);
-                net->sessions.push_back(s);
-                net->sessions.remove_if([] (const NetSession * value) {
-                    return value->mode == SESSION_DEAD;
-                });
+                Net *net = static_cast<Net*>(arg);
+                std::unique_ptr<NetSession> s (new NetSession(net, listener));
+                net->remove_dead_sessions();
+                net->sessions.push_back(std::move(s));
             }, this);
     event_add(listener_event, NULL);
     return 0;
@@ -70,5 +83,6 @@ int Net::watch(int port) {
 
 Net::~Net() {
     stop();
+    event_base_free(evbase);
 }
 

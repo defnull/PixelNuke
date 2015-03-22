@@ -8,21 +8,25 @@
 #ifndef NET_H
 #define	NET_H
 
-#include <list>
+#include <vector>
+#include <memory>
 #include <event2/event.h>
 #include "NetSession.h"
+#include "utils.h"
 
-class Net {
+class Net : NonCopyable {
 public:
+    /// @throw std::runtime_error
     Net();
-    virtual ~Net();
+    ~Net();
     int watch(int port);
-    struct event_base* getBase();
+    event_base* getBase();
     void loop();
     void stop();
 private:
-    struct event_base* evbase;
-    std::list<NetSession*> sessions;
+    void remove_dead_sessions();
+    event_base* evbase;
+    std::vector<std::unique_ptr<NetSession>> sessions;
     bool running = true;
 };
 
