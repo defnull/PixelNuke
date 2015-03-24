@@ -122,7 +122,7 @@ void NetSession::error(const char * msg) {
     close();
 }
 
-void NetSession::send(std::string msg) {
+void NetSession::send(const std::string &msg) {
     send(msg.c_str(), msg.length());
 }
 

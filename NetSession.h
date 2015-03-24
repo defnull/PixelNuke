@@ -29,7 +29,7 @@ public:
     NetSession(Net *net, evutil_socket_t sock);
     ~NetSession();
     int mode = SESSION_NEW;
-    void send(std::string msg);
+    void send(const std::string &msg);
     void send(const char *msg, size_t i);
 private:
     void onReadable();

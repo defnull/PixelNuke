@@ -46,7 +46,6 @@ void Net::remove_dead_sessions()
     sessions.erase(new_end, sessions.end());
 }
 
-
 int Net::watch(int port) {
     evutil_socket_t listener;
 
