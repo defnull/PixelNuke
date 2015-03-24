@@ -11,19 +11,19 @@
 #include "UIWindow.h"
 #include "Net.h"
 #include <thread>
+#include "utils.h"
 
-class PixelServer {
+class PixelServer : NonCopyable {
 public:
     PixelServer();
-    virtual ~PixelServer();
+    ~PixelServer();
     void run();
     void stop();
     void setPixel(Uint32 x, Uint32 y, Uint32 c);
 
 private:
+    Net server;
     UIWindow window;
-    Net *server;
-    
     UILayer pxLayer;
     UILayer guiLayer;    
 };

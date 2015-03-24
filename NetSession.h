@@ -29,16 +29,16 @@ public:
     NetSession(Net *net, evutil_socket_t sock);
     ~NetSession();
     int mode = SESSION_NEW;
-    void send(const std::string &msg);
-    void send(const char *msg, size_t i);
+    void send(const std::string &msg) const;
+    void send(const char *msg, size_t i) const;
+    void error(const char* msg);
+    void close();
 private:
     void onReadable();
     void onWriteable();
     void onError(short int which);
-    void error(const char* msg);
-    void close();
-    Net *net;
-    bufferevent *bevent;
+    Net *net = NULL;
+    bufferevent *bevent = NULL;
     sockaddr_storage addr;
     timeval timeout = {.tv_sec=60, .tv_usec=0};
 

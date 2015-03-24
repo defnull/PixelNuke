@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #include "Net.h"
 #include "NetSession.h"
 #include <event2/event.h>
@@ -21,6 +22,21 @@ Net::Net() {
     evbase = event_base_new();
     if (!evbase)
         throw std::runtime_error("Could not create new event_base via libevent");
+}
+
+void Net::setCallback(const std::string &name, const netCallback &cb) {
+    callbacks[name] = cb;
+}
+
+void Net::fireCallback(const std::string &name, NetSession & client, const std::string &line) {
+    printf("%s %s", name.c_str(), line.c_str());
+    try {
+        callbacks.at(name)(client, line);
+    } catch (std::out_of_range) {
+        client.error("Unknown command");
+    } catch (std::exception const& x) {
+        std::cerr << "Exception: " << x.what() << std::endl;
+    }
 }
 
 void Net::loop() {
@@ -72,6 +88,7 @@ int Net::watch(int port) {
     auto* listener_event = event_new(evbase, listener,
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
                 Net *net = static_cast<Net*>(arg);
+                printf("new\n");
                 std::unique_ptr<NetSession> s (new NetSession(net, listener));
                 net->remove_dead_sessions();
                 net->sessions.push_back(std::move(s));

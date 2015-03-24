@@ -12,6 +12,7 @@
 #include <event2/bufferevent.h>
 #include <string>
 #include <glob.h>
+#include <cstring>
 
 NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
     socklen_t slen = sizeof (addr);
@@ -44,7 +45,8 @@ NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
 }
 
 NetSession::~NetSession() {
-    bufferevent_free(bevent);
+    if(bevent)
+        bufferevent_free(bevent);
 }
 
 void NetSession::onReadable() {
@@ -53,21 +55,20 @@ void NetSession::onReadable() {
     auto *input = bufferevent_get_input(bevent);
 
     while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
-        unsigned int x, y, c, t1, t2;
-        int m = sscanf(line, "PX %u %u %n%8x%n", &x, &y, &t1, &c, &t2);
-        if (m == 2) {
-            printf("R %d %d", x, y);
-        } else if (m == 3 && t2 - t1 == 6) {
-            c |= 0xff000000;
-            printf("PX %u %u %x", x, y, c);
-        } else if (m == 3 && t2 - t1 == 8) {
-            // #rrggbbaa -> #aarrggbb
-            c = (c >> 8) + ((c & 0xff) << 24);
-            printf("PX %d %d %x", x, y, c);
-        }
+        auto pch = strchr(line, ' ');
+        printf("'%s' '%s'\n", line, pch);
 
-        send(line, n);
-        send("\n", 1);
+        if (pch==NULL) {
+            const std::string cmd(line, n-1);
+            const std::string data;
+            net->fireCallback(cmd, *this, data);
+        } else {
+            unsigned int cmdlen = pch-line;
+            const std::string cmd(line, pch-line);
+            const std::string data(pch+1, n-cmdlen-1);
+            net->fireCallback(cmd, *this, data);
+        }
+    
         delete line;
     }
 
@@ -94,6 +95,7 @@ void NetSession::close() {
         
         if (evbuffer_get_length(bufferevent_get_output(bevent)) == 0) {
             bufferevent_free(bevent);
+            bevent = NULL;
             mode = SESSION_DEAD;
         } else {
             bufferevent_set_timeouts(bevent, &DEAD_TIMEOUT, &DEAD_TIMEOUT);
@@ -103,6 +105,7 @@ void NetSession::close() {
                         if (evbuffer_get_length(bufferevent_get_output(bev)) == 0) {
                             NetSession *me = static_cast<NetSession*> (ctx);
                             bufferevent_free(me->bevent);
+                            me->bevent = NULL;
                             me->mode = SESSION_DEAD;
                         }
                     },
@@ -110,6 +113,7 @@ void NetSession::close() {
             [] (bufferevent *bev, short int which, void *ctx) {
                 NetSession *me = static_cast<NetSession*> (ctx);
                 bufferevent_free(me->bevent);
+                me->bevent = NULL;
                 me->mode = SESSION_DEAD;
             }
             , this);
@@ -122,10 +126,11 @@ void NetSession::error(const char * msg) {
     close();
 }
 
-void NetSession::send(const std::string &msg) {
+void NetSession::send(const std::string &msg) const {
     send(msg.c_str(), msg.length());
 }
 
-void NetSession::send(const char *msg, size_t n) {
+void NetSession::send(const char *msg, size_t n) const {
     bufferevent_write(bevent, msg, n);
+    bufferevent_write(bevent, "\n", 1);
 }

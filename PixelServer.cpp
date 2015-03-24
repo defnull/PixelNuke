@@ -9,13 +9,19 @@
 #include "Net.h"
 
 PixelServer::PixelServer() :
+server(),
+window(),
 pxLayer(1024, 1024, false),
 guiLayer(1024, 1024, true) {
-    server = new Net();
     window.addLayer(&pxLayer);
-    server->watch(8080);
+    window.addLayer(&guiLayer);
+    server.setCallback("PX",
+        [&](const NetSession &s, const std::string &line) {
+            s.send("PX "+line);
+        });
+    server.watch(8080);
     
-    std::thread netThread ([&] {server->loop();});
+    std::thread netThread ([&] {server.loop();});
     netThread.detach();
 }
 
@@ -28,7 +34,7 @@ void PixelServer::run() {
 }
 
 void PixelServer::stop() {
-    server->stop();
+    server.stop();
     window.stop();
 }
 

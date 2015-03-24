@@ -13,6 +13,10 @@
 #include <event2/event.h>
 #include "NetSession.h"
 #include "utils.h"
+#include <unordered_map>
+#include <functional>
+
+typedef std::function<void(NetSession & client, const std::string & line)> netCallback;
 
 class Net : NonCopyable {
 public:
@@ -23,11 +27,14 @@ public:
     event_base* getBase();
     void loop();
     void stop();
+    void setCallback(const std::string &name, const netCallback &cb);
+    void fireCallback(const std::string &name, NetSession & client, const std::string &line);
 private:
     void remove_dead_sessions();
     event_base* evbase;
     std::vector< std::unique_ptr<NetSession> > sessions;
     bool running = true;
+    std::unordered_map< std::string, netCallback > callbacks;
 };
 
 #endif	/* NET_H */

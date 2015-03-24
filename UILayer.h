@@ -8,8 +8,9 @@
 #ifndef UILAYER_H
 #define	UILAYER_H
 #include <GL/glew.h>
+#include "utils.h"
 
-class UILayer {
+class UILayer : NonCopyable {
 public:
     UILayer(GLuint width, GLuint height, bool alpha);
     ~UILayer();
@@ -24,9 +25,9 @@ private:
     GLuint texWidth;
     GLuint texHeight;
     GLenum texFormat;
-    GLuint texId;
-    GLuint texPBO1;
-    GLuint texPBO2;
+    GLuint texId = 0;
+    GLuint texPBO1 = 0;
+    GLuint texPBO2 = 0;
     GLubyte *texData = NULL;
 };
 

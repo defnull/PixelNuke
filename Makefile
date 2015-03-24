@@ -23,4 +23,4 @@ run: all
 	./$(EXECUTABLE)
 
 debug: all
-	gdb -x run ./$(EXECUTABLE)
+	gdb -ex run ./$(EXECUTABLE)
