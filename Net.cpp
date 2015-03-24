@@ -29,7 +29,6 @@ void Net::setCallback(const std::string &name, const netCallback &cb) {
 }
 
 void Net::fireCallback(const std::string &name, NetSession & client, const std::string &line) {
-    printf("%s %s", name.c_str(), line.c_str());
     try {
         callbacks.at(name)(client, line);
     } catch (std::out_of_range) {
