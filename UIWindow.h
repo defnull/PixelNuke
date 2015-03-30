@@ -7,9 +7,10 @@
 
 #ifndef UIWINDOW_H
 #define	UIWINDOW_H
-#include <SDL2/SDL.h>
 #include "UILayer.h"
 #include <vector>
+#include <stdint.h>
+#include <GLFW/glfw3.h>
 
 class UIWindow {
 public:
@@ -21,9 +22,11 @@ public:
     void stop();
     void addLayer(UILayer*);
 private:
-    SDL_Window* window;
+    GLFWwindow* window;
     std::vector<UILayer*> layers;
     Uint32 maxfps = 30;
+    unsigned int frameCounter = 0;
+
 };
 
 #endif	/* UIWINDOW_H */

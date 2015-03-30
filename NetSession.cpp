@@ -13,11 +13,12 @@
 #include <string>
 #include <glob.h>
 #include <cstring>
+#include "PxCommand.h"
 
 NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
     socklen_t slen = sizeof (addr);
     int csockfd;
-    
+
     if ((csockfd = ::accept(sockfd, (sockaddr*) &addr, &slen)) < 0) {
         mode = SESSION_DEAD;
         return;
@@ -55,21 +56,9 @@ void NetSession::onReadable() {
     auto *input = bufferevent_get_input(bevent);
 
     while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
-        auto pch = strchr(line, ' ');
-        printf("'%s' '%s'\n", line, pch);
-
-        if (pch==NULL) {
-            const std::string cmd(line, n-1);
-            const std::string data;
-            net->fireCallback(cmd, *this, data);
-        } else {
-            unsigned int cmdlen = pch-line;
-            const std::string cmd(line, pch-line);
-            const std::string data(pch+1, n-cmdlen-1);
-            net->fireCallback(cmd, *this, data);
-        }
-    
-        delete line;
+    	PxCommand cmd(this, line, n);
+    	delete line;
+    	net->fireCallback(cmd);
     }
 
     if (evbuffer_get_length(input) >= 1024) {

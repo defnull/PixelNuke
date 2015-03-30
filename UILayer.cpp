@@ -8,23 +8,82 @@
 #include "UILayer.h"
 #include <cstring>
 #include <cstdio>
+#include <cstdlib>
+#include <algorithm>
 
-UILayer::UILayer(GLuint width, GLuint height, bool alpha) :
+
+UILayer::UILayer(unsigned int width, unsigned int height, bool alpha) :
 width(width), height(height) {
-    texWidth = 64;
-    while (texWidth < width || texWidth < height)
-        texWidth = texWidth * 2;
-    texHeight = texWidth;
+	texSize = 64;
+    while (texSize < width || texSize < height)
+    	texSize *= 2;
     texFormat = alpha ? GL_RGBA8 : GL_RGB;
-    allocate();
+    
+    auto nbytes = getTexSize();
+    texData = new GLubyte[nbytes];
+
+    // Create texture object
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create two PBOs
+    glGenBuffers(1, &texPBO1);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO1);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
+    glGenBuffers(1, &texPBO2);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO2);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
+void UILayer::resize(unsigned int w, unsigned int h) {
+    std::lock_guard<std::mutex> lock(resizeMutex);
+
+	unsigned int tSize = 64;
+
+	width = w;
+	height = h;
+
+    while (tSize < w || tSize < h)
+    	tSize *= 2;
+
+    // Never make it smaller. This way we can make setPx lock-free
+    if(tSize <= texSize) {
+    	return;
+    }
+
+    auto nbytes = tSize * tSize * (texFormat == GL_RGBA8 ? 4 : 3);
+    GLubyte* tData = new GLubyte[nbytes];
+
+    // Now we copy the old tex buffer to the new image...
+    unsigned int rlen = std::min(tSize, texSize) * (texFormat == GL_RGBA8 ? 4 : 3);
+    for(unsigned int row = 0; row < texSize; row++) {
+    	//memcpy(tData + (row*tSize), texData+(row*texSize), rlen);
+    }
+
+    // Resize PBOs
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO1);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO2);
+    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+    // Swap everything
+    texData = tData;
+	texSize = tSize;
+}
+
+
 void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
-    if(x > texWidth || y > texHeight)
+    if(x >= width || y >= height)
         return;
 
-    GLubyte* ptr = texData + x * texWidth + y;
-    
+    pxCounter++;
+
+    GLubyte* ptr = texData + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
     GLubyte r = (rgba & 0xff000000) >> 24;
     GLubyte g = (rgba & 0x00ff0000) >> 16;
     GLubyte b = (rgba & 0x0000ff00) >> 8;
@@ -43,44 +102,8 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
     ptr[2] = b;
 }
 
-
-void UILayer::allocate() {
-    if (texData != NULL)
-        cleanup();
-
-    auto nbytes = getTexSize();
-
-    texData = new GLubyte[nbytes];
-
-    // Create texture object
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, texFormat, texWidth, texHeight, 0, texFormat, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Create two PBOs
-    glGenBuffers(1, &texPBO1);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO1);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
-    glGenBuffers(1, &texPBO2);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texPBO2);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, nbytes, NULL, GL_STREAM_DRAW);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-}
-
-void UILayer::cleanup() {
-    if (texData != NULL) {
-        glDeleteTextures(1, &texId);
-        glDeleteBuffers(1, &texPBO1);
-        glDeleteBuffers(1, &texPBO2);
-        delete texData;
-    }
-}
-
 void UILayer::draw() {
-    if (texData != NULL) return;
+    std::lock_guard<std::mutex> lock(resizeMutex);
 
     GLuint pboNext = texPBO1;
     GLuint pboIndex = texPBO2;
@@ -88,58 +111,54 @@ void UILayer::draw() {
     texPBO2 = pboNext;
 
     // Switch PBOs on each call. One is updated, one is drawn.
-
     // Update texture from first PBO
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboIndex);
     glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, texFormat, texWidth, texHeight, 0, texFormat, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, texFormat, texSize, texSize, 0, texFormat, GL_UNSIGNED_BYTE, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     // Update second PBO with new pixel data
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboNext);
     GLubyte *ptr = (GLubyte*) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-    memcpy(ptr, texData, getTexSize());
+    memcpy(ptr, texData, texSize * height * (texFormat == GL_RGBA8 ? 4 : 3));
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-    // Release PBOs
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
     //// Actually draw stuff. The texture should be updated in the meantime.
 
-    int quadsize;
-    if (width > texWidth || height > texHeight)
-        quadsize = (width > height) ? width : height;
-    else
-        quadsize = texWidth;
-
     if (hasAlpha()) {
+        return;
         glEnable(GL_BLEND);
         glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
     } else {
         glDisable(GL_BLEND);
     }
 
+    float tw = width / (float) texSize;
+    float th = height / (float) texSize;
+
     glPushMatrix();
-    glTranslatef(0, -height, 0); // Align quad top left instead of bottom.
+    //glTranslatef(0, height, 0); // Align quad top left instead of bottom.
     glBindTexture(GL_TEXTURE_2D, texId);
     glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, 0.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex3f(quadsize, 0.0f, 0.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(quadsize, quadsize, 0.0f);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex3f(0.0f, quadsize, 0.0f);
+    	glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f, 0.0f);
+        glTexCoord2f(0.0f, tw);   glVertex3f(0.0f, width, 0.0f);
+        glTexCoord2f(th, tw);     glVertex3f(height, width, 0.0f);
+        glTexCoord2f(th, 0.0f);   glVertex3f(height, 0.0f, 0.0f);
     glEnd();
     glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
 }
 
 UILayer::~UILayer() {
-    cleanup();
+    glDeleteTextures(1, &texId);
+    glDeleteBuffers(1, &texPBO1);
+    glDeleteBuffers(1, &texPBO2);
+    delete[] texData;
 }
 
 size_t UILayer::getTexSize() {
-    return texWidth * texHeight * (texFormat == GL_RGBA8 ? 4 : 3);
+    return texSize * texSize * (texFormat == GL_RGBA8 ? 4 : 3);
 }
 
 bool UILayer::hasAlpha() {

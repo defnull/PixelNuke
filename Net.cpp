@@ -18,35 +18,37 @@
 Net::Net() {
     if (evthread_use_pthreads() != 0)
         throw std::runtime_error("Could not set up libevent for use with Pthreads");
-    event_enable_debug_mode(); // FIXME: Expensive debugging checks
     evbase = event_base_new();
     if (!evbase)
         throw std::runtime_error("Could not create new event_base via libevent");
 }
 
-void Net::setCallback(const std::string &name, const netCallback &cb) {
+void Net::setCallback(const std::string &name, const netCallback& cb) {
+	printf("%s\n", name.c_str());
     callbacks[name] = cb;
 }
 
-void Net::fireCallback(const std::string &name, NetSession & client, const std::string &line) {
+void Net::fireCallback(PxCommand &cmd) {
     try {
-        callbacks.at(name)(client, line);
+        callbacks.at(cmd.get(0))(cmd);
     } catch (std::out_of_range) {
-        client.error("Unknown command");
+        cmd.getClient().error("Unknown command");
     } catch (std::exception const& x) {
         std::cerr << "Exception: " << x.what() << std::endl;
     }
 }
 
 void Net::loop() {
+    printf("loop!\n");
     event_base_dispatch(evbase);
+    printf("unloop!\n");
 }
 
 void Net::stop() {
     event_base_loopexit(evbase, NULL);
 }
 
-struct event_base* Net::getBase() {
+event_base* Net::getBase() {
     return evbase;
 }
 
@@ -86,13 +88,14 @@ int Net::watch(int port) {
 
     auto* listener_event = event_new(evbase, listener,
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
-                Net *net = static_cast<Net*>(arg);
                 printf("new\n");
+                Net *net = static_cast<Net*>(arg);
                 std::unique_ptr<NetSession> s (new NetSession(net, listener));
                 net->remove_dead_sessions();
                 net->sessions.push_back(std::move(s));
             }, this);
     event_add(listener_event, NULL);
+
     return 0;
 }
 

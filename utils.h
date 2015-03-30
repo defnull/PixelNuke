@@ -22,5 +22,8 @@ private:
 
 using noncopy_::NonCopyable;
 
+typedef unsigned int Uint32;
+
+
 #endif /* include guard */
 

@@ -41,7 +41,6 @@ private:
     bufferevent *bevent = NULL;
     sockaddr_storage addr;
     timeval timeout = {.tv_sec=60, .tv_usec=0};
-
 };
 
 #endif	/* NETSESSION_H */

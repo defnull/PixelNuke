@@ -8,13 +8,41 @@
 #ifndef PXCOMMAND_H
 #define	PXCOMMAND_H
 
-class PxCommand {
-public:
-    PxCommand();
-    PxCommand(const PxCommand& orig);
-    virtual ~PxCommand();
-private:
+#include <string>
+#include <vector>
+#include <exception>
+#include "utils.h"
+#include "NetSession.h"
+#include <memory>
 
+class PxCommand : NonCopyable {
+public:
+    PxCommand(NetSession *client, char * line, size_t n);
+    ~PxCommand();
+
+    bool parse(size_t i, unsigned int &a, int base=10);
+
+    size_t nargs();
+    size_t len(size_t n);
+    const std::string &get(size_t n);
+    NetSession &getClient();
+
+private:
+    std::vector<std::string> args;
+    NetSession *client;
+};
+
+class PxParseError: public std::exception {
+public:
+	explicit PxParseError(const char * what): msg_(what) {};
+    explicit PxParseError(const std::string& message): msg_(message){};
+
+    virtual const char* what() const throw() {
+        return msg_.c_str();
+    }
+
+protected:
+    std::string msg_;
 };
 
 #endif	/* PXCOMMAND_H */

@@ -19,13 +19,13 @@ public:
     ~PixelServer();
     void run();
     void stop();
-    void setPixel(Uint32 x, Uint32 y, Uint32 c);
+    void setPixel(unsigned int x, unsigned int y, unsigned int c);
 
 private:
-    Net server;
     UIWindow window;
     UILayer pxLayer;
     UILayer guiLayer;    
+    Net server;
 };
 
 #endif	/* PIXELSERVER_H */

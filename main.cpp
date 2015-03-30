@@ -10,11 +10,10 @@
 #include <iostream>
 #include <thread>
 
-#include "Net.h"
 #include "PixelServer.h"
-#include "UIWindow.h"
 
 int main(int argc, char* argv[]) {
+    
     try {
         PixelServer px;
         px.run();

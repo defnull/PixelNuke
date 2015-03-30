@@ -12,11 +12,12 @@
 #include <memory>
 #include <event2/event.h>
 #include "NetSession.h"
+#include "PxCommand.h"
 #include "utils.h"
 #include <unordered_map>
 #include <functional>
 
-typedef std::function<void(NetSession & client, const std::string & line)> netCallback;
+typedef std::function<void(PxCommand & cmd)> netCallback;
 
 class Net : NonCopyable {
 public:
@@ -28,7 +29,7 @@ public:
     void loop();
     void stop();
     void setCallback(const std::string &name, const netCallback &cb);
-    void fireCallback(const std::string &name, NetSession & client, const std::string &line);
+    void fireCallback(PxCommand &cmd);
 private:
     void remove_dead_sessions();
     event_base* evbase;
