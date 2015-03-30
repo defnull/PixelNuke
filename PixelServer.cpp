@@ -8,6 +8,7 @@
 #include "PixelServer.h"
 #include "Net.h"
 #include <thread>
+#include <sstream>
 
 PixelServer::PixelServer() :
 window(),
@@ -37,6 +38,16 @@ server() {
             }
         });
 
+    server.setCallback("SIZE",
+        [&](PxCommand &cmd) {
+    		if(cmd.nargs() > 1) {
+    			throw PxParseError("SIZE does not take any parameters.");
+    		}
+    		std::ostringstream oss;
+    		oss << "SIZE " << window.width << " " << window.height;
+    		cmd.getClient().send(oss.str());
+    });
+
     server.watch(8080);
     
     std::thread networkThread ([&] {
@@ -47,7 +58,8 @@ server() {
 }
 
 void PixelServer::setPixel(unsigned int x, unsigned int y, unsigned int c) {
-    pxLayer.setPx(x, y, c);
+	if(x < window.width && y < window.height)
+        pxLayer.setPx(x, y, c);
 }
 
 void PixelServer::run() {

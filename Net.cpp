@@ -32,9 +32,11 @@ void Net::fireCallback(PxCommand &cmd) {
         callbacks.at(cmd.get(0))(cmd);
     } catch (std::out_of_range) {
         cmd.getClient().error("Unknown command");
-    } catch (std::exception const& x) {
-        std::cerr << "Exception: " << x.what() << std::endl;
-    }
+    } catch (PxParseError const& x) {
+    	cmd.getClient().error(x.what());
+	} catch (std::exception const& x) {
+		std::cerr << "Exception: " << x.what() << std::endl;
+	}
 }
 
 void Net::loop() {
