@@ -24,11 +24,12 @@ public:
 
     size_t nargs();
     size_t len(size_t n);
-    const std::string &get(size_t n);
+    const char* get(size_t n);
     NetSession &getClient();
 
 private:
-    std::vector<std::string> args;
+    char * line;
+    std::vector<char*> pos;
     NetSession *client;
 };
 

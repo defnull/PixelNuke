@@ -59,7 +59,6 @@ void NetSession::onReadable() {
 
     while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
     	PxCommand cmd(this, line, n);
-    	delete line;
     	net->fireCallback(cmd);
     }
 
