@@ -17,9 +17,8 @@ public:
     ~UILayer();
     bool hasAlpha();
     void draw();
-    void allocate();
-    void cleanup();
     void setPx(unsigned int x, unsigned int y, unsigned int c);
+    void saveAs(const char * filename);
 private:
     GLuint texSize;
     size_t texMem;

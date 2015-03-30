@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
+#include "dep/lodepng/lodepng.h"
 
 UILayer::UILayer(unsigned int texSize, bool alpha) :
 		texSize(texSize), texFormat(alpha ? GL_RGBA8 : GL_RGB) {
@@ -117,3 +118,12 @@ bool UILayer::hasAlpha() {
 	return texFormat == GL_RGBA8;
 }
 
+void UILayer::saveAs(const char* filename) {
+	GLubyte tmp[texMem];
+	memcpy(&tmp, texData, texMem);
+	if(hasAlpha()) {
+		lodepng_encode32_file(filename, tmp, texSize, texSize);
+	} else {
+		lodepng_encode24_file(filename, tmp, texSize, texSize);
+	}
+}
