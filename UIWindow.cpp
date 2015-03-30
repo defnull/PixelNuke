@@ -24,7 +24,7 @@ UIWindow::UIWindow() {
 
     // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(640, 480, "Pixelflut", NULL, NULL);
+    window = glfwCreateWindow(width, height, "Pixelflut", NULL, NULL);
     if (!window) {
         glfwTerminate();
         throw std::runtime_error("EXIT: Could not create OpenGL context and/or window");
@@ -51,9 +51,6 @@ UIWindow::UIWindow() {
 }
 
 void UIWindow::addLayer(UILayer *layer) {
-    int w, h;
-    glfwGetFramebufferSize(window, &w, &h);
-    layer->resize(w, h);
     layers.push_back(layer);
 }
 
@@ -62,8 +59,6 @@ UIWindow::~UIWindow() {
 }
 
 void UIWindow::loop() {
-    bool done = false;
-
 	/* Make the window's context current */
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -73,14 +68,11 @@ void UIWindow::loop() {
 
 	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int w, int h) {
 		UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
-	    for(UILayer* layer: win->layers) {
-	        layer->resize(w, h);
-	    };
+		glfwGetFramebufferSize(window, &(win->width), &(win->height));
 	});
 
-
 	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window) && !done) {
+	while (!glfwWindowShouldClose(window)) {
 
 		auto preSwap = glfwGetTime();
 		glfwSwapBuffers(window);
@@ -112,14 +104,10 @@ void UIWindow::stop() {
 
 
 void UIWindow::draw() {
-    int w, h;
-    glfwGetFramebufferSize(window, &w, &h);
-    printf("%u %u\n", w, h);
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0, w, h, 0, -1, 1);
-    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+    glOrtho(0, width, height, 0, -1, 1);
+    glViewport(0, 0, (GLsizei) width, (GLsizei) height);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

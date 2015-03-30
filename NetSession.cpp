@@ -24,6 +24,8 @@ NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
         return;
     }
     
+    printf("Network: New connection\n");
+
     mode = SESSION_ALIVE;
 
     evutil_make_socket_nonblocking(csockfd);

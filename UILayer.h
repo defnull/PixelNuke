@@ -13,18 +13,16 @@
 
 class UILayer : NonCopyable {
 public:
-    UILayer(unsigned int width, unsigned int height, bool alpha);
+    UILayer(unsigned int texSize, bool alpha);
     ~UILayer();
-    size_t getTexSize();
     bool hasAlpha();
     void draw();
     void allocate();
     void cleanup();
     void setPx(unsigned int x, unsigned int y, unsigned int c);
-    void resize(unsigned int width, unsigned int height);
 private:
-    GLuint width, height;
     GLuint texSize;
+    size_t texMem;
     GLenum texFormat;
     GLuint texId = 0;
     GLuint texPBO1 = 0;

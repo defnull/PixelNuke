@@ -24,7 +24,6 @@ Net::Net() {
 }
 
 void Net::setCallback(const std::string &name, const netCallback& cb) {
-	printf("%s\n", name.c_str());
     callbacks[name] = cb;
 }
 
@@ -39,12 +38,13 @@ void Net::fireCallback(PxCommand &cmd) {
 }
 
 void Net::loop() {
-    printf("loop!\n");
+	printf("Network: Starting...\n");
     event_base_dispatch(evbase);
-    printf("unloop!\n");
+	printf("Network: Stopped.\n");
 }
 
 void Net::stop() {
+	printf("Network: stop\n");
     event_base_loopexit(evbase, NULL);
 }
 
@@ -52,8 +52,7 @@ event_base* Net::getBase() {
     return evbase;
 }
 
-void Net::remove_dead_sessions()
-{
+void Net::remove_dead_sessions() {
     auto new_end = std::remove_if(
         sessions.begin(),
         sessions.end(),
@@ -88,7 +87,6 @@ int Net::watch(int port) {
 
     auto* listener_event = event_new(evbase, listener,
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
-                printf("new\n");
                 Net *net = static_cast<Net*>(arg);
                 std::unique_ptr<NetSession> s (new NetSession(net, listener));
                 net->remove_dead_sessions();
@@ -101,6 +99,7 @@ int Net::watch(int port) {
 
 Net::~Net() {
     stop();
+    event_base_loopbreak(evbase);
     event_base_free(evbase);
 }
 

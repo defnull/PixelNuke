@@ -24,7 +24,6 @@ public:
 private:
     UIWindow window;
     UILayer pxLayer;
-    UILayer guiLayer;    
     Net server;
 };
 

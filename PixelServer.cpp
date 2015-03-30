@@ -11,11 +11,9 @@
 
 PixelServer::PixelServer() :
 window(),
-pxLayer(100, 100, false),
-guiLayer(100, 100, true),
+pxLayer(1024, false),
 server() {
     window.addLayer(&pxLayer);
-    window.addLayer(&guiLayer);
 
     server.setCallback("PX",
         [&](PxCommand &cmd) {
@@ -38,13 +36,14 @@ server() {
                 setPixel(x,y,c);
             }
         });
+
+    server.watch(8080);
     
     std::thread networkThread ([&] {
     	server.loop();
     });
     networkThread.detach();
 
-    server.watch(8080);
 }
 
 void PixelServer::setPixel(unsigned int x, unsigned int y, unsigned int c) {

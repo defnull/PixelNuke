@@ -21,6 +21,9 @@ public:
     void draw();
     void stop();
     void addLayer(UILayer*);
+
+    int width=640;
+    int height=480;
 private:
     GLFWwindow* window;
     std::vector<UILayer*> layers;
