@@ -54,12 +54,10 @@ server() {
     	server.loop();
     });
     networkThread.detach();
-
 }
 
 void PixelServer::setPixel(unsigned int x, unsigned int y, unsigned int c) {
-	if(x < window.width && y < window.height)
-        pxLayer.setPx(x, y, c);
+    pxLayer.setPx(x, y, c);
 }
 
 void PixelServer::run() {
