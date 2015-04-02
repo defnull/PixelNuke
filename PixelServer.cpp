@@ -9,6 +9,7 @@
 #include "Net.h"
 #include <thread>
 #include <sstream>
+#include <cstdio>
 
 PixelServer::PixelServer() :
 window(),
@@ -22,6 +23,11 @@ server() {
             	GLuint x, y;
             	cmd.parse(1, x);
             	cmd.parse(2, y);
+
+                char msg[64];
+                int cx = snprintf(msg, 64, "PX %d %d %08x", x, y, pxLayer.getPx(x,y));
+                if(cx >= 0 && cx < 64)
+                    cmd.getClient().send(msg);
             } else if (cmd.nargs() == 4) {
             	GLuint x,y,c;
             	cmd.parse(1, x);
@@ -34,7 +40,7 @@ server() {
             	} else {
             		throw PxParseError("Color must have 3 or 4 byte components.");
             	}
-                setPixel(x,y,c);
+                pxLayer.setPx(x, y, c);
             }
         });
 
@@ -54,10 +60,7 @@ server() {
     	server.loop();
     });
     networkThread.detach();
-}
 
-void PixelServer::setPixel(unsigned int x, unsigned int y, unsigned int c) {
-    pxLayer.setPx(x, y, c);
 }
 
 void PixelServer::run() {

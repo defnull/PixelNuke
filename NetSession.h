@@ -20,7 +20,6 @@ static const timeval READ_TIMEOUT = {.tv_sec = 60, .tv_usec = 0};
 #define SESSION_ALIVE 2
 #define SESSION_DYING 1
 #define SESSION_DEAD  0
-#define MAX_READBUFF 1024
 
 class Net;
 
@@ -41,6 +40,8 @@ private:
     bufferevent *bevent = NULL;
     sockaddr_storage addr;
     timeval timeout = {.tv_sec=60, .tv_usec=0};
+    size_t bufferSize = 1024;
+    size_t maxLine = 1024;
 };
 
 #endif	/* NETSESSION_H */

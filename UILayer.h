@@ -18,6 +18,7 @@ public:
     bool hasAlpha();
     void draw();
     void setPx(unsigned int x, unsigned int y, unsigned int c);
+    unsigned int getPx(unsigned int x, unsigned int y);
     void saveAs(const char * filename);
     const GLuint texSize;
 private:

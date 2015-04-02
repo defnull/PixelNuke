@@ -19,7 +19,6 @@ public:
     ~PixelServer();
     void run();
     void stop();
-    void setPixel(unsigned int x, unsigned int y, unsigned int c);
 
 private:
     UIWindow window;

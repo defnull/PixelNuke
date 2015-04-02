@@ -42,7 +42,7 @@ NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
             static_cast<NetSession*> (ctx)->onError(which);
         }
     , this);
-    bufferevent_setwatermark(bevent, EV_READ, 0, 1024);
+    bufferevent_setwatermark(bevent, EV_READ, 0, bufferSize);
     bufferevent_set_timeouts(bevent, &timeout, NULL);
     bufferevent_enable(bevent, EV_READ | EV_WRITE);
 }
@@ -62,7 +62,7 @@ void NetSession::onReadable() {
     	net->fireCallback(cmd);
     }
 
-    if (evbuffer_get_length(input) >= 1024) {
+    if (evbuffer_get_length(input) >= maxLine) {
         error("Line to long");
     }
 }

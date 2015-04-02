@@ -12,11 +12,11 @@
 #include <stdint.h>
 #include <GLFW/glfw3.h>
 #include <mutex>
+#include "utils.h"
 
-class UIWindow {
+class UIWindow : NonCopyable {
 public:
     UIWindow();
-    UIWindow(const UIWindow& orig);
     virtual ~UIWindow();
     void loop();
     void draw();

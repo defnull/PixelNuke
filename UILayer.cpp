@@ -42,7 +42,7 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
 	pxCounter++;
 
 	GLubyte* ptr = texData
-			+ ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
+                 + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
 	GLubyte r = (rgba & 0xff000000) >> 24;
 	GLubyte g = (rgba & 0x00ff0000) >> 16;
 	GLubyte b = (rgba & 0x0000ff00) >> 8;
@@ -59,6 +59,16 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
 	ptr[0] = r;
 	ptr[1] = g;
 	ptr[2] = b;
+}
+
+unsigned int UILayer::getPx(unsigned int x, unsigned int y) {
+	if (x >= texSize || y >= texSize)
+		return 0x00000000;
+
+	GLubyte* ptr = texData
+                 + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
+	
+	return (ptr[0] << 24) + (ptr[1] << 16) + (ptr[2] << 8) + 0xff;
 }
 
 void UILayer::draw() {
