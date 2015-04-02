@@ -11,6 +11,7 @@
 #include <vector>
 #include <stdint.h>
 #include <GLFW/glfw3.h>
+#include <mutex>
 
 class UIWindow {
 public:
@@ -21,11 +22,18 @@ public:
     void draw();
     void stop();
     void addLayer(UILayer*);
-
-    int width=640;
+    void toggleFullscreen();
+    void setFullscreen(bool);
+    int width=1124;
     int height=480;
 private:
-    GLFWwindow* window;
+    void setupWindow(bool fsmode, size_t monid);
+    void onResize();
+    bool fullscreen = false;
+    bool monitor_id = 0;
+    std::mutex window_mutex;
+    std::mutex draw_mutex;
+    GLFWwindow* window = NULL;
     std::vector<UILayer*> layers;
     Uint32 maxfps = 30;
     unsigned int frameCounter = 0;

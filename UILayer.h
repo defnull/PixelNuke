@@ -19,8 +19,8 @@ public:
     void draw();
     void setPx(unsigned int x, unsigned int y, unsigned int c);
     void saveAs(const char * filename);
+    const GLuint texSize;
 private:
-    GLuint texSize;
     size_t texMem;
     GLenum texFormat;
     GLuint texId = 0;
