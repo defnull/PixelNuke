@@ -12,6 +12,7 @@
 #include <event2/bufferevent_struct.h>
 #include <ctime>
 #include <string>
+#include <memory>
 #include "utils.h"
 
 static const timeval DEAD_TIMEOUT = {.tv_sec = 10, .tv_usec = 0};
@@ -32,13 +33,14 @@ public:
     void send(const char *msg, size_t i) const;
     void error(const char* msg);
     void close();
+    void *data;
+    sockaddr_storage addr;
 private:
     void onReadable();
     void onWriteable();
     void onError(short int which);
     Net *net = NULL;
     bufferevent *bevent = NULL;
-    sockaddr_storage addr;
     timeval timeout = {.tv_sec=60, .tv_usec=0};
     size_t bufferSize = 1024;
     size_t maxLine = 1024;

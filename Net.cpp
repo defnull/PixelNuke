@@ -15,6 +15,21 @@
 #include <event2/event_struct.h>
 #include <event2/thread.h>
 
+bool ipcmp(sockaddr_storage *a, sockaddr_storage *b) {
+	if(a->ss_family != b->ss_family)
+		return false;
+	if(a->ss_family == AF_INET) {
+		return 0 == std::memcmp(&(((sockaddr_in*) a)->sin_addr),
+								&(((sockaddr_in*) b)->sin_addr),
+								sizeof(in_addr));
+	} else if(a->ss_family == AF_INET6) {
+		return 0 == std::memcmp(&(((sockaddr_in6*) a)->sin6_addr),
+								&(((sockaddr_in6*) b)->sin6_addr),
+								sizeof(in6_addr));
+	}
+	return false;
+}
+
 Net::Net() {
     if (evthread_use_pthreads() != 0)
         throw std::runtime_error("Could not set up libevent for use with Pthreads");
@@ -38,6 +53,12 @@ void Net::fireCallback(PxCommand &cmd) {
 		std::cerr << "Exception: " << x.what() << std::endl;
 	}
 }
+
+void Net::setSessionCallbacks(const sessionCallback &connect, const sessionCallback &disconnect) {
+	onConnect = connect;
+	onDisconnect = disconnect;
+}
+
 
 void Net::loop() {
 	printf("Network: Starting...\n");
@@ -91,6 +112,10 @@ int Net::watch(int port) {
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
                 Net *net = static_cast<Net*>(arg);
                 std::unique_ptr<NetSession> s (new NetSession(net, listener));
+                for(auto const &sess: net->sessions) {
+                	if(ipcmp(&(sess->addr), &(s.get()->addr)))
+                		sess->error("New connection from same IP");
+                }
                 net->remove_dead_sessions();
                 net->sessions.push_back(std::move(s));
             }, this);

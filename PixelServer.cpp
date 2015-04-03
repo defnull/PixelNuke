@@ -10,15 +10,40 @@
 #include <thread>
 #include <sstream>
 #include <cstdio>
+#include <ctime>
+
+struct PixelSession: NonCopyable {
+	PixelSession() {
+    	gettimeofday(&connected, NULL);
+    };
+
+    unsigned int pixel = 0;
+    timeval connected;
+};
+
 
 PixelServer::PixelServer() :
 window(),
 pxLayer(1024, false),
+guiLayer(1024, true),
 server() {
     window.addLayer(&pxLayer);
+    window.addLayer(&guiLayer);
+
+    server.setSessionCallbacks(
+    		[&](NetSession *s) {
+    	s->data = new PixelSession();
+    },
+			[&](NetSession *s) {
+		auto pxs = static_cast<PixelSession*>(s->data);
+		printf("Disconnect after %u\n", pxs->pixel);
+    	delete pxs;
+    });
 
     server.setCallback("PX",
         [&](PxCommand &cmd) {
+    		auto pxs = static_cast<PixelSession*>(cmd.getClient().data);
+    		pxs->pixel++;
             if(cmd.nargs() == 3) {
             	GLuint x, y;
             	cmd.parse(1, x);

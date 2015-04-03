@@ -28,9 +28,9 @@ public:
     NetSession &getClient();
 
 private:
+    NetSession *client;
     char * line;
     std::vector<char*> pos;
-    NetSession *client;
 };
 
 class PxParseError: public std::exception {

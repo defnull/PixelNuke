@@ -15,7 +15,7 @@
 #include <cstring>
 #include "PxCommand.h"
 
-NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
+NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net), data(NULL) {
     socklen_t slen = sizeof (addr);
     int csockfd;
 
@@ -45,9 +45,11 @@ NetSession::NetSession(Net *net, evutil_socket_t sockfd) : net(net) {
     bufferevent_setwatermark(bevent, EV_READ, 0, bufferSize);
     bufferevent_set_timeouts(bevent, &timeout, NULL);
     bufferevent_enable(bevent, EV_READ | EV_WRITE);
+    net->onConnect(this);
 }
 
 NetSession::~NetSession() {
+    net->onDisconnect(this);
     if(bevent)
         bufferevent_free(bevent);
 }
@@ -112,7 +114,8 @@ void NetSession::close() {
 }
 
 void NetSession::error(const char * msg) {
-    evbuffer_add_printf(bufferevent_get_output(bevent), "ERR %s\n", msg);
+	if(mode == SESSION_DEAD) return;
+	evbuffer_add_printf(bufferevent_get_output(bevent), "ERR %s\n", msg);
     close();
 }
 

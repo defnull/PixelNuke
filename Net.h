@@ -18,6 +18,7 @@
 #include <functional>
 
 typedef std::function<void(PxCommand & cmd)> netCallback;
+typedef std::function<void(NetSession *sess)> sessionCallback;
 
 class Net : NonCopyable {
 public:
@@ -30,6 +31,9 @@ public:
     void stop();
     void setCallback(const std::string &name, const netCallback &cb);
     void fireCallback(PxCommand &cmd);
+    void setSessionCallbacks(const sessionCallback &connect, const sessionCallback &disconnect);
+    sessionCallback onConnect = [](NetSession *sess){};
+    sessionCallback onDisconnect = [](NetSession *sess){};
 private:
     void remove_dead_sessions();
     event_base* evbase;
