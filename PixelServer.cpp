@@ -54,7 +54,7 @@ server() {
     		cmd.getClient().send(oss.str());
     });
 
-    server.watch(8080);
+    server.watch(1234);
     
     std::thread networkThread ([&] {
     	server.loop();
