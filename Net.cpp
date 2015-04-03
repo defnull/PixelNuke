@@ -11,9 +11,9 @@
 #include <iostream>
 #include "Net.h"
 #include "NetSession.h"
-#include <event2/event.h>
-#include <event2/event_struct.h>
-#include <event2/thread.h>
+#include "event2/event.h"
+#include "event2/event_struct.h"
+#include "event2/thread.h"
 
 Net::Net() {
     if (evthread_use_pthreads() != 0)

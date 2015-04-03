@@ -7,9 +7,9 @@
 
 #include "NetSession.h"
 #include "Net.h"
-#include <event2/event.h>
-#include <event2/buffer.h>
-#include <event2/bufferevent.h>
+#include "event2/event.h"
+#include "event2/buffer.h"
+#include "event2/bufferevent.h"
 #include <string>
 #include <glob.h>
 #include <cstring>

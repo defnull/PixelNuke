@@ -7,9 +7,9 @@
 
 #ifndef NETSESSION_H
 #define	NETSESSION_H
-#include <event2/event_struct.h>
-#include <event2/bufferevent.h>
-#include <event2/bufferevent_struct.h>
+#include "event2/event_struct.h"
+#include "event2/bufferevent.h"
+#include "event2/bufferevent_struct.h"
 #include <ctime>
 #include <string>
 #include "utils.h"
