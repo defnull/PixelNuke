@@ -75,6 +75,10 @@ event_base* Net::getBase() {
     return evbase;
 }
 
+std::vector<std::unique_ptr<NetSession> >& Net::getSessions() {
+	return sessions;
+}
+
 void Net::remove_dead_sessions() {
     auto new_end = std::remove_if(
         sessions.begin(),

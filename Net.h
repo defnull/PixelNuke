@@ -32,6 +32,7 @@ public:
     void setCallback(const std::string &name, const netCallback &cb);
     void fireCallback(PxCommand &cmd);
     void setSessionCallbacks(const sessionCallback &connect, const sessionCallback &disconnect);
+    std::vector< std::unique_ptr<NetSession> > &getSessions();
     sessionCallback onConnect = [](NetSession *sess){};
     sessionCallback onDisconnect = [](NetSession *sess){};
 private:

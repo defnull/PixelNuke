@@ -33,6 +33,7 @@ public:
     void send(const char *msg, size_t i) const;
     void error(const char* msg);
     void close();
+    Net &getServer();
     void *data;
     sockaddr_storage addr;
 private:

@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cstdio>
 #include <ctime>
+#include <arpa/inet.h>
 
 struct PixelSession: NonCopyable {
 	PixelSession() {
@@ -89,6 +90,19 @@ server() {
             "HELP:   PX <x> <y>\n"
             "HELP:   SIZE\n"
             "HELP: and more ;)");
+    });
+
+    server.setCallback("STAT",
+        [&](PxCommand &cmd) {
+    		for(auto const & sess: cmd.getClient().getServer().getSessions()) {
+        		auto pxs = static_cast<PixelSession*>(cmd.getClient().data);
+    			auto addr = ((sockaddr_in6*) &(sess->addr))->sin6_addr;
+    		    char ip[50];
+    		    inet_ntop(PF_INET6, (struct in_addr6*)&(addr), ip, sizeof(ip)-1);
+    			char msg[128];
+    			snprintf(msg, 128, "STAT %s %u", ip, pxs->pixel);
+    			cmd.getClient().send(msg);
+    		}
     });
 
     server.watch(1234);

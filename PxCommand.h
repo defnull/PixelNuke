@@ -25,7 +25,7 @@ public:
     size_t nargs();
     size_t len(size_t n);
     const char* get(size_t n);
-    NetSession &getClient();
+    NetSession & getClient();
 
 private:
     NetSession *client;

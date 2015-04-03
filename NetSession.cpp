@@ -54,6 +54,11 @@ NetSession::~NetSession() {
         bufferevent_free(bevent);
 }
 
+Net& NetSession::getServer() {
+	return *net;
+}
+
+
 void NetSession::onReadable() {
     char *line;
     size_t n;
