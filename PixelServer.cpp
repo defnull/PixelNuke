@@ -57,6 +57,7 @@ server() {
     server.setCallback("HELP",
         [&](PxCommand &cmd) {
             cmd.getClient().send(
+            "HELP: == PIXELFLUT ==\n"
             "HELP: Line based ASCII protocol\n"
             "HELP: Commands:\n"
             "HELP:   PX <x> <y> <RRGGBB>\n"
