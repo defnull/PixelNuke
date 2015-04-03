@@ -17,10 +17,12 @@ set(GLFW_BUILD_TESTS OFF)
 add_subdirectory(dep/glfw)
 include_directories(dep/glfw/include)
 
-find_package(LibEvent REQUIRED)
-	
-#add_subdirectory(dep/libevent)
-#include_directories(dep/libevent/include)
+set(EVENT__DISABLE_BENCHMARK ON)
+set(EVENT__DISABLE_TESTS ON)
+set(EVENT__DISABLE_REGRESS ON)
+set(EVENT__DISABLE_SAMPLES ON)
+add_subdirectory(dep/libevent)
+include_directories(dep/libevent/include)
 
 target_link_libraries(pixelnuke glfw GLEW event event_pthreads ${GLFW_LIBRARIES})
 

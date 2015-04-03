@@ -11,5 +11,6 @@
   $ sudo apt-get install glew-dev xorg-dev libglu1-mesa-dev
   $ git submodule init
   $ git submodule update
-  $ cmake -DCMAKE_BUILD_TYPE=Release .
+  $ mkdir build && cd build
+  $ cmake -DCMAKE_BUILD_TYPE=Release ..
 

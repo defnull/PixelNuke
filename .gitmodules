@@ -4,3 +4,6 @@
 [submodule "dep/lodepng"]
 	path = dep/lodepng
 	url = https://github.com/lvandeve/lodepng
+[submodule "dep/libevent"]
+	path = dep/libevent
+	url = https://github.com/libevent/libevent
