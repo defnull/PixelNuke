@@ -25,6 +25,7 @@ private:
     UILayer pxLayer;
     UILayer guiLayer;
     Net server;
+    bool running;
 };
 
 #endif	/* PIXELSERVER_H */

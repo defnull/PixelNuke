@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <ctime>
 #include <arpa/inet.h>
+#include <chrono>
 
 struct PixelSession: NonCopyable {
 	PixelSession() {
@@ -112,6 +113,22 @@ server() {
     });
     networkThread.detach();
 
+    running = true;
+
+    std::thread screenshotThread ([&] {
+    	char filename[128];
+		struct timeval tp;
+    	while(running) {
+    		gettimeofday(&tp, NULL);
+    		long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
+    		snprintf(filename, 128, "log/px_%lu.png", ms);
+    		pxLayer.saveAs(filename);
+    		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    	}
+    });
+    screenshotThread.detach();
+
+
 }
 
 void PixelServer::run() {
@@ -120,6 +137,7 @@ void PixelServer::run() {
 }
 
 void PixelServer::stop() {
+    running = false;
     server.stop();
     window.stop();
 }
