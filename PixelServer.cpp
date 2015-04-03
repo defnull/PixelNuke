@@ -54,6 +54,17 @@ server() {
     		cmd.getClient().send(oss.str());
     });
 
+    server.setCallback("HELP",
+        [&](PxCommand &cmd) {
+            cmd.getClient().send(
+            "HELP: Line based ASCII protocol\n"
+            "HELP: Commands:\n"
+            "HELP:   PX <x> <y> <RRGGBB>\n"
+            "HELP:   PX <x> <y>\n"
+            "HELP:   SIZE\n"
+            "HELP: and more ;)");
+    });
+
     server.watch(1234);
     
     std::thread networkThread ([&] {
