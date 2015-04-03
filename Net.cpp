@@ -11,9 +11,9 @@
 #include <iostream>
 #include "Net.h"
 #include "NetSession.h"
-#include "event2/event.h"
-#include "event2/event_struct.h"
-#include "event2/thread.h"
+#include <event2/event.h>
+#include <event2/event_struct.h>
+#include <event2/thread.h>
 
 Net::Net() {
     if (evthread_use_pthreads() != 0)
@@ -72,7 +72,7 @@ int Net::watch(int port) {
     memset(&addr, 0, sizeof (addr));
     addr.sin6_family = AF_INET6;
     addr.sin6_addr = in6addr_any;
-    addr.sin6_port = htons(8080);
+    addr.sin6_port = htons(port);
 
     if (listener < 0) {
         return 1;

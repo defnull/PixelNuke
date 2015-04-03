@@ -64,6 +64,7 @@ server() {
 }
 
 void PixelServer::run() {
+	window.setFullscreen(true);
     window.loop();
 }
 
