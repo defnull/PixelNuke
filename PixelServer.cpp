@@ -99,7 +99,7 @@ server() {
     		    inet_ntop(PF_INET6, (struct in_addr6*)&(addr), ip, sizeof(ip)-1);
     			char msg[128];
     			snprintf(msg, 128, "STAT %s %u", ip, sess->data->pixel);
-    			sess->send(msg);
+    			session.send(msg);
     		}
     });
 
