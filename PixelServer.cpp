@@ -121,18 +121,6 @@ server() {
     		}
     });
 
-    server.setCallback("KICK",
-        [&](NetSession<PixelCounter> & session, PxCommand &cmd) {
-    		for(auto const & sess: session.getServer().getSessions()) {
-    			auto addr = ((sockaddr_in6*) &(sess->addr))->sin6_addr;
-    		    char ip[64];
-    		    inet_ntop(PF_INET6, (struct in_addr6*)&(addr), ip, sizeof(ip)-1);
-    		    if(strcmp(cmd.get(1), ip) == 0) {
-    		    	sess->error("Boop");
-    		    }
-    		}
-    });
-
     server.watch(1234);
     server.detach();
 
@@ -146,7 +134,7 @@ server() {
     		long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
     		snprintf(filename, 128, "log/px_%lu.png", ms);
     		pxLayer.saveAs(filename);
-    		std::this_thread::sleep_for(std::chrono::seconds(5));
+    		std::this_thread::sleep_for(std::chrono::seconds(1));
     	}
     });
     screenshotThread.detach();

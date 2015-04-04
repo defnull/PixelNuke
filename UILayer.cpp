@@ -39,8 +39,6 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
 	if (x >= texSize || y >= texSize)
 		return;
 
-	pxCounter++;
-
 	GLubyte* ptr = texData
                  + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
 	GLubyte r = (rgba & 0xff000000) >> 24;

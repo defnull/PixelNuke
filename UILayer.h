@@ -29,7 +29,6 @@ private:
     GLuint texPBO2 = 0;
     GLubyte *texData = NULL;
     std::mutex resizeMutex;
-    unsigned int pxCounter = 0;
 };
 
 #endif	/* UILAYER_H */
