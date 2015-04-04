@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <array>
 
 
 static const timeval DEAD_TIMEOUT = {10, 0};
@@ -30,6 +31,9 @@ static const timeval READ_TIMEOUT = {60, 0};
 #define SESSION_ALIVE 2
 #define SESSION_DYING 1
 #define SESSION_DEAD  0
+
+
+using IPv6 = std::array<unsigned char, 16>;
 
 template<typename UT>
 class Net;
@@ -40,10 +44,11 @@ public:
     NetSession(Net<UT> *net, evutil_socket_t sock);
     ~NetSession();
     int mode = SESSION_NEW;
-    void send(const std::string &msg) const;
-    void send(const char *msg, size_t n) const;
+    void send(const std::string &msg, bool priority = true) const;
+    void send(const char *msg, size_t n, bool priority = true) const;
     void error(const char* msg);
     void close();
+    IPv6 getIp();
     std::shared_ptr<UT> data;
     Net<UT> &getServer();
     sockaddr_storage addr;
@@ -101,14 +106,16 @@ inline NetSession<UT>::~NetSession() {
 }
 
 template<typename UT>
-inline void NetSession<UT>::send(const std::string& msg) const {
-    send(msg.c_str(), msg.length());
+inline void NetSession<UT>::send(const std::string& msg, bool priority) const {
+    send(msg.c_str(), msg.length(), priority);
 }
 
 template<typename UT>
-inline void NetSession<UT>::send(const char* msg, size_t n) const {
-    bufferevent_write(bevent, msg, n);
-    bufferevent_write(bevent, "\n", 1);
+inline void NetSession<UT>::send(const char* msg, size_t n, bool priority) const {
+	if(priority || evbuffer_get_length(bufferevent_get_output(bevent)) < bufferSize) {
+	    bufferevent_write(bevent, msg, n);
+	    bufferevent_write(bevent, "\n", 1);
+	}
 }
 
 template<typename UT>
@@ -116,6 +123,13 @@ inline void NetSession<UT>::error(const char* msg) {
 	if(mode == SESSION_DEAD) return;
 	evbuffer_add_printf(bufferevent_get_output(bevent), "ERR %s\n", msg);
     close();
+}
+
+template<typename UT>
+inline IPv6 NetSession<UT>::getIp() {
+	IPv6 v6;
+	memcpy(v6.data(), &((sockaddr_in6*) &addr)->sin6_addr, 16);
+	return v6;
 }
 
 template<typename UT>

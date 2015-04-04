@@ -51,17 +51,12 @@ server() {
 
     server.setSessionCallbacks(
     	[&](NetSession<PixelCounter> & session) {
-
-        for(auto const &sess: server.getSessions()) {
-        	if(ipcmp(&sess->addr, &session.addr)) {
-        		session.data = sess->data;
-        		return;
-        	}
-        }
-    	session.data = std::make_shared<PixelCounter>();
+    	auto ip = session.getIp();
+    	if(users.find(ip) == users.end())
+    		users[ip] = std::make_shared<PixelCounter>();
+    	session.data = users[ip];
     },
     	[&](NetSession<PixelCounter> & session) {
-		printf("Disconnect after %u\n", session.data->pixel);
     });
 
     server.setCallback("PX",
@@ -123,6 +118,18 @@ server() {
     			char msg[128];
     			snprintf(msg, 128, "STAT %s %u", ip, sess->data->pixel);
     			session.send(msg);
+    		}
+    });
+
+    server.setCallback("KICK",
+        [&](NetSession<PixelCounter> & session, PxCommand &cmd) {
+    		for(auto const & sess: session.getServer().getSessions()) {
+    			auto addr = ((sockaddr_in6*) &(sess->addr))->sin6_addr;
+    		    char ip[64];
+    		    inet_ntop(PF_INET6, (struct in_addr6*)&(addr), ip, sizeof(ip)-1);
+    		    if(strcmp(cmd.get(1), ip) == 0) {
+    		    	sess->error("Boop");
+    		    }
     		}
     });
 

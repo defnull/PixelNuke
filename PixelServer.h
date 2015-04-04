@@ -12,6 +12,7 @@
 #include "Net.h"
 #include <thread>
 #include "utils.h"
+#include <map>
 
 class PixelCounter;
 
@@ -27,6 +28,7 @@ private:
     UILayer pxLayer;
     UILayer guiLayer;
     Net<PixelCounter> server;
+    std::map<IPv6, std::shared_ptr<PixelCounter>> users;
     bool running;
 };
 
