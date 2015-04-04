@@ -12,8 +12,7 @@
 #include <cstdlib>
 #include <climits>
 
-PxCommand::PxCommand(NetSession *client, char * line, const size_t n):
-	client(client), line(line) {
+PxCommand::PxCommand(char * line, const size_t n): line(line) {
 
 	for(size_t i=0; i<n; i++) {
 		if(line[i] == ' ') {
@@ -46,8 +45,4 @@ const char* PxCommand::get(size_t n) {
 
 size_t PxCommand::len(size_t n) {
 	return strlen(get(n));
-}
-
-NetSession& PxCommand::getClient() {
-	return *client;
 }

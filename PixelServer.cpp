@@ -33,19 +33,17 @@ server() {
     window.addLayer(&guiLayer);
 
     server.setSessionCallbacks(
-    		[&](NetSession *s) {
-    	s->data = new PixelSession();
+    	[&](NetSession<PixelSession> & session) {
+    		session.data = new PixelSession();
     },
-			[&](NetSession *s) {
-		auto pxs = static_cast<PixelSession*>(s->data);
-		printf("Disconnect after %u\n", pxs->pixel);
-    	delete pxs;
+    	[&](NetSession<PixelSession> & session) {
+		printf("Disconnect after %u\n", session.data->pixel);
+    	delete session.data;
     });
 
     server.setCallback("PX",
-        [&](PxCommand &cmd) {
-    		auto pxs = static_cast<PixelSession*>(cmd.getClient().data);
-    		pxs->pixel++;
+        [&](NetSession<PixelSession> & session, PxCommand &cmd) {
+    		session.data->pixel += 1;
             if(cmd.nargs() == 3) {
             	GLuint x, y;
             	cmd.parse(1, x);
@@ -54,7 +52,7 @@ server() {
                 char msg[64];
                 int cx = snprintf(msg, 64, "PX %d %d %08x", x, y, pxLayer.getPx(x,y));
                 if(cx >= 0 && cx < 64)
-                    cmd.getClient().send(msg);
+                	session.send(msg);
             } else if (cmd.nargs() == 4) {
             	GLuint x,y,c;
             	cmd.parse(1, x);
@@ -72,18 +70,18 @@ server() {
         });
 
     server.setCallback("SIZE",
-        [&](PxCommand &cmd) {
+        [&](NetSession<PixelSession> & session, PxCommand &cmd) {
     		if(cmd.nargs() > 1) {
     			throw PxParseError("SIZE does not take any parameters.");
     		}
     		std::ostringstream oss;
     		oss << "SIZE " << window.width << " " << window.height;
-    		cmd.getClient().send(oss.str());
+    		session.send(oss.str());
     });
 
     server.setCallback("HELP",
-        [&](PxCommand &cmd) {
-            cmd.getClient().send(
+        [&](NetSession<PixelSession> & session, PxCommand &cmd) {
+    	session.send(
             "HELP: == PIXELFLUT ==\n"
             "HELP: Line based ASCII protocol\n"
             "HELP: Commands:\n"
@@ -94,24 +92,19 @@ server() {
     });
 
     server.setCallback("STAT",
-        [&](PxCommand &cmd) {
-    		for(auto const & sess: cmd.getClient().getServer().getSessions()) {
-        		auto pxs = static_cast<PixelSession*>(cmd.getClient().data);
+        [&](NetSession<PixelSession> & session, PxCommand &cmd) {
+    		for(auto const & sess: session.getServer().getSessions()) {
     			auto addr = ((sockaddr_in6*) &(sess->addr))->sin6_addr;
-    		    char ip[50];
+    		    char ip[64];
     		    inet_ntop(PF_INET6, (struct in_addr6*)&(addr), ip, sizeof(ip)-1);
     			char msg[128];
-    			snprintf(msg, 128, "STAT %s %u", ip, pxs->pixel);
-    			cmd.getClient().send(msg);
+    			snprintf(msg, 128, "STAT %s %u", ip, sess->data->pixel);
+    			sess->send(msg);
     		}
     });
 
     server.watch(1234);
-    
-    std::thread networkThread ([&] {
-    	server.loop();
-    });
-    networkThread.detach();
+    server.detach();
 
     running = true;
 

@@ -12,12 +12,11 @@
 #include <vector>
 #include <exception>
 #include "utils.h"
-#include "NetSession.h"
 #include <memory>
 
 class PxCommand : NonCopyable {
 public:
-    PxCommand(NetSession *client, char * line, size_t n);
+    PxCommand(char * line, size_t n);
     ~PxCommand();
 
     bool parse(size_t i, unsigned int &a, int base=10);
@@ -25,10 +24,8 @@ public:
     size_t nargs();
     size_t len(size_t n);
     const char* get(size_t n);
-    NetSession & getClient();
 
 private:
-    NetSession *client;
     char * line;
     std::vector<char*> pos;
 };
