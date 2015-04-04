@@ -13,7 +13,7 @@
 #include <thread>
 #include "utils.h"
 
-class PixelSession;
+class PixelCounter;
 
 class PixelServer : NonCopyable {
 public:
@@ -26,7 +26,7 @@ private:
     UIWindow window;
     UILayer pxLayer;
     UILayer guiLayer;
-    Net<PixelSession> server;
+    Net<PixelCounter> server;
     bool running;
 };
 

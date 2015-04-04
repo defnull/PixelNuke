@@ -44,7 +44,7 @@ public:
     void send(const char *msg, size_t n) const;
     void error(const char* msg);
     void close();
-    UT *data;
+    std::shared_ptr<UT> data;
     Net<UT> &getServer();
     sockaddr_storage addr;
 private:

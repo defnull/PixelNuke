@@ -20,25 +20,6 @@
 #include <unordered_map>
 #include <functional>
 
-namespace {
-bool ipcmp(sockaddr_storage *a, sockaddr_storage *b) {
-       if(a->ss_family != b->ss_family)
-               return false;
-       if(a->ss_family == AF_INET) {
-               return 0 == std::memcmp(&(((sockaddr_in*) a)->sin_addr),
-                                                               &(((sockaddr_in*) b)->sin_addr),
-                                                               sizeof(in_addr));
-       } else if(a->ss_family == AF_INET6) {
-               return 0 == std::memcmp(&(((sockaddr_in6*) a)->sin6_addr),
-                                                               &(((sockaddr_in6*) b)->sin6_addr),
-                                                               sizeof(in6_addr));
-       }
-       return false;
-}
-
-
-}
-
 
 
 template <typename UT>
@@ -113,10 +94,6 @@ inline int Net<UT>::watch(int port) {
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
                 Net<UT> *net = static_cast<Net<UT>*>(arg);
                 std::unique_ptr<sessionType> s (new sessionType(net, listener));
-                for(auto const &sess: net->sessions) {
-                	if(ipcmp(&(sess->addr), &(s.get()->addr)))
-                		sess->error("New connection from same IP");
-                }
                 net->remove_dead_sessions();
                 net->sessions.push_back(std::move(s));
             }, this);
