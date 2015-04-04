@@ -21,6 +21,7 @@ struct PixelCounter: NonCopyable {
 
     unsigned int pixel = 0;
     timeval connected;
+    unsigned int lastpx[2] = {0,0};
 };
 
 namespace {
@@ -87,6 +88,33 @@ server() {
             }
         });
 
+    server.setCallback("MORE",
+        [&](NetSession<PixelCounter> & session, PxCommand &cmd) {
+    		auto n = cmd.nargs();
+    		for(size_t i=1; i<n; i++) {
+        		session.data->pixel += 1;
+    			unsigned int c;
+    			int x,y;
+
+    			cmd.parse(i, c, 16);
+            	x = session.data->lastpx[0];
+            	y = session.data->lastpx[1];
+
+            	if(cmd.len(i) == 6) {
+                	c = (c<<8) + 0xff;
+            	}
+
+                pxLayer.setPx(x, y, c);
+                if(++x > window.width) {
+                	x=0;
+                	if(++y > window.height)
+                		y = 0;
+                }
+                session.data->lastpx[0] = x;
+                session.data->lastpx[1] = y;
+    		}
+        });
+
     server.setCallback("SIZE",
         [&](NetSession<PixelCounter> & session, PxCommand &cmd) {
     		if(cmd.nargs() > 1) {
@@ -138,8 +166,6 @@ server() {
     	}
     });
     screenshotThread.detach();
-
-
 }
 
 void PixelServer::run() {
