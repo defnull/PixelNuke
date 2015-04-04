@@ -59,7 +59,7 @@ private:
     Net<UT> *net = NULL;
     bufferevent *bevent = NULL;
     timeval timeout = {60, 0};
-    size_t bufferSize = 1024;
+    size_t bufferSize = 10240;
     size_t maxLine = 1024;
     PxCommand currentCommand;
 };
