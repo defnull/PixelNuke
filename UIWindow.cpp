@@ -131,23 +131,14 @@ void UIWindow::loop() {
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window)) {
 
-		auto preSwap = glfwGetTime();
 		glfwSwapBuffers(window);
 
 		auto preDraw = glfwGetTime();
 		draw();
 
-		auto preEvents = glfwGetTime();
 		glfwPollEvents();
 
-		auto preWait = glfwGetTime();
-
-		if(frameCounter++ % 100 == 0)
-			printf("Draw: %02.0f%% Event: %02.0f%%\n",
-					(preEvents-preDraw)/(1.0f/maxfps)*100,
-					(preWait-preEvents)/(1.0f/maxfps)*100);
-
-		int wait = ((1.0f/maxfps)-(preWait-preDraw))*1000;
+		int wait = ((1.0f/maxfps)-(glfwGetTime()-preDraw))*1000;
 		if(wait > 10)
 			std::this_thread::sleep_for(std::chrono::milliseconds(wait));
 	}
@@ -171,7 +162,7 @@ void UIWindow::draw() {
     for(UILayer* layer: layers) {
     	glPushMatrix();
     	
-        unsigned int ts = layer->texSize;
+        int ts = layer->texSize;
         if(width > ts || height > ts) {
             float scale = std::max(width, height) / (float) ts;
             glScalef(scale, scale, 1);
