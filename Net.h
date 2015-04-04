@@ -111,7 +111,7 @@ inline int Net<UT>::watch(int port) {
 
     auto* listener_event = event_new(evbase, listener,
             EV_READ | EV_PERSIST, [] (evutil_socket_t listener, short event, void *arg) {
-                Net *net = static_cast<Net*>(arg);
+                Net<UT> *net = static_cast<Net<UT>*>(arg);
                 std::unique_ptr<sessionType> s (new sessionType(net, listener));
                 for(auto const &sess: net->sessions) {
                 	if(ipcmp(&(sess->addr), &(s.get()->addr)))
@@ -128,7 +128,6 @@ inline int Net<UT>::watch(int port) {
 template<typename UT>
 inline event_base* Net<UT>::getBase() {
     return evbase;
-
 }
 
 template<typename UT>

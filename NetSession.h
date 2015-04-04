@@ -59,7 +59,7 @@ private:
 };
 
 template<typename UT>
-inline NetSession<UT>::NetSession(Net<UT>* net, evutil_socket_t sockfd) {
+inline NetSession<UT>::NetSession(Net<UT>* net, evutil_socket_t sockfd): net(net) {
     socklen_t slen = sizeof (addr);
     int csockfd;
 
