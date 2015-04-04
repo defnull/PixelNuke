@@ -56,6 +56,7 @@ private:
     timeval timeout = {60, 0};
     size_t bufferSize = 1024;
     size_t maxLine = 1024;
+    PxCommand currentCommand;
 };
 
 template<typename UT>
@@ -167,8 +168,8 @@ inline void NetSession<UT>::onReadable() {
     auto *input = bufferevent_get_input(bevent);
 
     while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
-    	PxCommand cmd(line, n);
-    	net->fireCallback(*this, cmd);
+    	currentCommand.set(line, n);
+    	net->fireCallback(*this, currentCommand);
     }
 
     if (evbuffer_get_length(input) >= maxLine) {

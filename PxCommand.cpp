@@ -12,7 +12,13 @@
 #include <cstdlib>
 #include <climits>
 
-PxCommand::PxCommand(char * line, const size_t n): line(line) {
+
+void PxCommand::set(char * newline, size_t n) {
+	if(line) {
+		free(line);
+		pos.clear();
+	}
+	line = newline;
 
 	for(size_t i=0; i<n; i++) {
 		if(line[i] == ' ') {
@@ -34,7 +40,7 @@ size_t PxCommand::nargs() {
 }
 
 PxCommand::~PxCommand() {
-	delete line;
+	free(line);
 }
 
 const char* PxCommand::get(size_t n) {

@@ -116,7 +116,7 @@ server() {
     		long int ms = tp.tv_sec * 1000 + tp.tv_usec / 1000; //get current timestamp in milliseconds
     		snprintf(filename, 128, "log/px_%lu.png", ms);
     		pxLayer.saveAs(filename);
-    		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    		std::this_thread::sleep_for(std::chrono::seconds(5));
     	}
     });
     screenshotThread.detach();

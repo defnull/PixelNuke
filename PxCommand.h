@@ -14,11 +14,10 @@
 #include "utils.h"
 #include <memory>
 
-class PxCommand : NonCopyable {
+class PxCommand {
 public:
-    PxCommand(char * line, size_t n);
     ~PxCommand();
-
+    void set(char * line, size_t n);
     bool parse(size_t i, unsigned int &a, int base=10);
 
     size_t nargs();
@@ -26,7 +25,7 @@ public:
     const char* get(size_t n);
 
 private:
-    char * line;
+    char * line = nullptr;
     std::vector<char*> pos;
 };
 
