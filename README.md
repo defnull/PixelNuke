@@ -8,6 +8,7 @@
 
 # Building from source
 
+  $ sudo apt-get install build-essential cmake git
   $ sudo apt-get install libevent-dev libssl-dev libglew-dev xorg-dev libglu1-mesa-dev
   $ git submodule init
   $ git submodule update
