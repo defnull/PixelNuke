@@ -8,9 +8,9 @@
 
 # Building from source
 
-  $ sudo apt-get install libssl-dev libglew-dev xorg-dev libglu1-mesa-dev
+  $ sudo apt-get install libevent-dev libssl-dev libglew-dev xorg-dev libglu1-mesa-dev
   $ git submodule init
   $ git submodule update
-  $ make #
-  $ cmake -DCMAKE_BUILD_TYPE=Release ..
+  $ make
+  $ ./release/pixelnuke
 
