@@ -37,7 +37,6 @@ private:
     std::vector<UILayer*> layers;
     Uint32 maxfps = 30;
     unsigned int frameCounter = 0;
-
 };
 
 #endif	/* UIWINDOW_H */

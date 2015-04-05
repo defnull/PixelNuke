@@ -12,6 +12,42 @@
 #include <cstdlib>
 #include <climits>
 
+namespace {
+
+	bool parseInt(const char* arg, unsigned int &a) {
+		unsigned int i = 0, r = 0;
+		char c;
+		while((c = arg[i++]) != '\0') {
+			if('0' <= c && c <= '9') {
+				r = (r*10) + c - '0';
+			} else {
+				return false;
+			}
+		}
+		a=r;
+		return true;
+	}
+
+	bool parseHex(const char* arg, unsigned int &a) {
+		unsigned int i = 0, r = 0;
+		char c;
+		while((c = arg[i++]) != '\0') {
+			if('0' <= c && c <= '9') {
+				r = (r*16) + c - '0';
+			} else if('a' <= c && c <= 'f') {
+				r = (r*16) + 10 + c - 'a';
+			} else if('A' <= c && c <= 'F') {
+				r = (r*16) + 10 + c - 'A';
+			} else {
+				return false;
+			}
+		}
+		a=r;
+		return true;
+	}
+
+}
+
 
 void PxCommand::set(char * newline, size_t n) {
 	if(line) {
@@ -30,9 +66,15 @@ void PxCommand::set(char * newline, size_t n) {
 }
 
 bool PxCommand::parse(size_t index, unsigned int &a, int base) {
-	char * end;
-	a = std::strtoul(get(index), &end, base);
-	return *end == '\0';
+	if(base == 10) {
+		return parseInt(get(index), a);
+	} else if (base == 16) {
+		return parseHex(get(index), a);
+	} else {
+		char * end;
+		a = std::strtoul(get(index), &end, base);
+		return *end == '\0';
+	}
 }
 
 size_t PxCommand::nargs() {

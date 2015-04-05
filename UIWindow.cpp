@@ -77,7 +77,7 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 		UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
 
-		printf("KEY: %x %x %x %x\n", key, scancode, action, mods);
+		printf("KEY: %u %u %u %u\n", key, scancode, action, mods);
 		if(action != GLFW_PRESS) return;
 		
         if (key == GLFW_KEY_F11) {
@@ -167,7 +167,7 @@ void UIWindow::draw() {
             float scale = std::max(width, height) / (float) ts;
             glScalef(scale, scale, 1);
         }
-        
+
         layer->draw();
     	glPopMatrix();
     }    
