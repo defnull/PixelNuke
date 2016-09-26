@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   PixelServer.cpp
  * Author: marc
- * 
+ *
  * Created on March 22, 2015, 2:48 PM
  */
 

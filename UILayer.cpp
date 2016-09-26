@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   UILayer.cpp
  * Author: marc
- * 
+ *
  * Created on March 21, 2015, 8:26 PM
  */
 
@@ -13,9 +13,9 @@
 #include "dep/lodepng/lodepng.h"
 
 UILayer::UILayer(unsigned int texSize, bool alpha) :
-		texSize(texSize), texFormat(alpha ? GL_RGBA8 : GL_RGB) {
+		texSize(texSize), texFormat(alpha ? GL_RGBA : GL_RGB) {
 
-	texMem = texSize * texSize * (texFormat == GL_RGBA8 ? 4 : 3);
+	texMem = texSize * texSize * (texFormat == GL_RGBA ? 4 : 3);
 	texData = new GLubyte[texMem];
 
 	// Create texture object
@@ -40,12 +40,19 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
 		return;
 
 	GLubyte* ptr = texData
-                 + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
+                 + ((y * texSize) + x) * (texFormat == GL_RGBA ? 4 : 3);
 	GLubyte r = (rgba & 0xff000000) >> 24;
 	GLubyte g = (rgba & 0x00ff0000) >> 16;
 	GLubyte b = (rgba & 0x0000ff00) >> 8;
 	GLubyte a = (rgba & 0x000000ff) >> 0;
 
+	if(hasAlpha()) {
+        ptr[0] = r;
+        ptr[1] = g;
+        ptr[2] = b;
+        ptr[3] = a;
+        return;
+	}
 	if (a == 0)
 		return;
 	if (a < 0xff) {
@@ -53,6 +60,7 @@ void UILayer::setPx(unsigned int x, unsigned int y, unsigned int rgba) {
 		r = (a * r + na * (ptr[0])) / 0xff;
 		g = (a * g + na * (ptr[1])) / 0xff;
 		b = (a * b + na * (ptr[2])) / 0xff;
+		return;
 	}
 	ptr[0] = r;
 	ptr[1] = g;
@@ -64,8 +72,8 @@ unsigned int UILayer::getPx(unsigned int x, unsigned int y) {
 		return 0x00000000;
 
 	GLubyte* ptr = texData
-                 + ((y * texSize) + x) * (texFormat == GL_RGBA8 ? 4 : 3);
-	
+                 + ((y * texSize) + x) * (texFormat == GL_RGBA ? 4 : 3);
+
 	return (ptr[0] << 24) + (ptr[1] << 16) + (ptr[2] << 8) + 0xff;
 }
 
@@ -96,9 +104,8 @@ void UILayer::draw() {
 	//// Actually draw stuff. The texture should be updated in the meantime.
 
 	if (hasAlpha()) {
-		return;
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glDisable(GL_BLEND);
 	}
@@ -123,7 +130,7 @@ UILayer::~UILayer() {
 }
 
 bool UILayer::hasAlpha() {
-	return texFormat == GL_RGBA8;
+	return texFormat == GL_RGBA;
 }
 
 void UILayer::saveAs(const char* filename) {

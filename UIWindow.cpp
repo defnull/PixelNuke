@@ -1,7 +1,7 @@
-/* 
+/*
  * File:   UIWindow.cpp
  * Author: marc
- * 
+ *
  * Created on March 20, 2015, 3:20 PM
  */
 
@@ -36,7 +36,9 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
     if(fsmode) {
         int count;
         GLFWmonitor** monitors = glfwGetMonitors(&count);
+
         monitor_id = monid % count;
+        printf("Switching to monitor: %u (of %u)\n", monitor_id, count);
         fullscreen = true;
         GLFWmonitor* monitor = monitors[monitor_id];
         const GLFWvidmode* mode = glfwGetVideoMode(monitor);
@@ -54,7 +56,7 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
         glfwTerminate();
         throw std::runtime_error("EXIT: Could not create OpenGL context and/or window");
     }
-    
+
     glfwSetWindowUserPointer(window, (void*) this);
 	glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -73,17 +75,17 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
     glDisable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_2D);
 	onResize();
-    
+
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 		UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
 
 		printf("KEY: %u %u %u %u\n", key, scancode, action, mods);
 		if(action != GLFW_PRESS) return;
-		
+
         if (key == GLFW_KEY_F11) {
             win->toggleFullscreen();
         } else if (key == GLFW_KEY_F12) {
-            win->setupWindow(true, win->monitor_id += 1);
+            win->setupWindow(true, win->monitor_id + 1);
         } else if (key == GLFW_KEY_Q
                 || key == GLFW_KEY_ESCAPE) {
             win->stop();
@@ -155,13 +157,13 @@ void UIWindow::draw() {
     std::lock_guard<std::mutex> lock(draw_mutex);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    
-    //glClearColor(0, 0, 0, 1);
-    //glClear(GL_COLOR_BUFFER_BIT);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     for(UILayer* layer: layers) {
     	glPushMatrix();
-    	
+
         int ts = layer->texSize;
         if(width > ts || height > ts) {
             float scale = std::max(width, height) / (float) ts;
@@ -170,5 +172,5 @@ void UIWindow::draw() {
 
         layer->draw();
     	glPopMatrix();
-    }    
+    }
 }
