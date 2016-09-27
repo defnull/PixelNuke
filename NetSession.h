@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   NetSession.h
  * Author: marc
  *
@@ -39,14 +39,15 @@ template<typename UT>
 class Net;
 
 template<typename UT>
-class NetSession : NonCopyable {
+class NetSession : NonCopyable
+{
 public:
-    NetSession(Net<UT> *net, evutil_socket_t sock);
+    NetSession ( Net<UT> *net, evutil_socket_t sock );
     ~NetSession();
     int mode = SESSION_NEW;
-    void send(const std::string &msg, bool priority = true) const;
-    void send(const char *msg, size_t n, bool priority = true) const;
-    void error(const char* msg);
+    void send ( const std::string &msg, bool priority = true ) const;
+    void send ( const char *msg, size_t n, bool priority = true ) const;
+    void error ( const char* msg );
     void close();
     IPv6 getIp();
     std::shared_ptr<UT> data;
@@ -55,7 +56,7 @@ public:
 private:
     void onReadable();
     void onWriteable();
-    void onError(short int which);
+    void onError ( short int which );
     Net<UT> *net = NULL;
     bufferevent *bevent = NULL;
     timeval timeout = {60, 0};
@@ -65,138 +66,152 @@ private:
 };
 
 template<typename UT>
-inline NetSession<UT>::NetSession(Net<UT>* net, evutil_socket_t sockfd): net(net) {
-    socklen_t slen = sizeof (addr);
+inline NetSession<UT>::NetSession ( Net<UT>* net, evutil_socket_t sockfd ) : net ( net )
+{
+    socklen_t slen = sizeof ( addr );
     int csockfd;
 
-    if ((csockfd = ::accept(sockfd, (sockaddr*) &addr, &slen)) < 0) {
+    if ( ( csockfd = ::accept ( sockfd, ( sockaddr* ) &addr, &slen ) ) < 0 ) {
         mode = SESSION_DEAD;
         return;
     }
 
-    printf("Network: New connection\n");
+    printf ( "Network: New connection\n" );
 
     mode = SESSION_ALIVE;
 
-    evutil_make_socket_nonblocking(csockfd);
-    bevent = bufferevent_socket_new(this->net->getBase(), csockfd, BEV_OPT_CLOSE_ON_FREE);
+    evutil_make_socket_nonblocking ( csockfd );
+    bevent = bufferevent_socket_new ( this->net->getBase(), csockfd, BEV_OPT_CLOSE_ON_FREE );
 
-    bufferevent_setcb(bevent,
-        [&] (bufferevent *bev, void *ctx) {
-            static_cast<NetSession*> (ctx)->onReadable();
-        },
-        [&] (bufferevent *bev, void *ctx) {
-            static_cast<NetSession*> (ctx)->onWriteable();
-        },
-        [&] (bufferevent *bev, short int which, void *ctx) {
-            static_cast<NetSession*> (ctx)->onError(which);
-        }
-    , this);
-    bufferevent_setwatermark(bevent, EV_READ, 0, bufferSize);
-    bufferevent_set_timeouts(bevent, &timeout, NULL);
-    bufferevent_enable(bevent, EV_READ | EV_WRITE);
-    net->onConnect(*this);
+    bufferevent_setcb ( bevent,
+    [&] ( bufferevent *bev, void *ctx ) {
+        static_cast<NetSession*> ( ctx )->onReadable();
+    },
+    [&] ( bufferevent *bev, void *ctx ) {
+        static_cast<NetSession*> ( ctx )->onWriteable();
+    },
+    [&] ( bufferevent *bev, short int which, void *ctx ) {
+        static_cast<NetSession*> ( ctx )->onError ( which );
+    }
+    , this );
+    bufferevent_setwatermark ( bevent, EV_READ, 0, bufferSize );
+    bufferevent_set_timeouts ( bevent, &timeout, NULL );
+    bufferevent_enable ( bevent, EV_READ | EV_WRITE );
+    net->onConnect ( *this );
 }
 
 template<typename UT>
-inline NetSession<UT>::~NetSession() {
-    net->onDisconnect(*this);
-    if(bevent)
-        bufferevent_free(bevent);
+inline NetSession<UT>::~NetSession()
+{
+    net->onDisconnect ( *this );
+    if ( bevent ) {
+        bufferevent_free ( bevent );
+    }
 }
 
 template<typename UT>
-inline void NetSession<UT>::send(const std::string& msg, bool priority) const {
-    send(msg.c_str(), msg.length(), priority);
+inline void NetSession<UT>::send ( const std::string& msg, bool priority ) const
+{
+    send ( msg.c_str(), msg.length(), priority );
 }
 
 template<typename UT>
-inline void NetSession<UT>::send(const char* msg, size_t n, bool priority) const {
-	if(priority || evbuffer_get_length(bufferevent_get_output(bevent)) < bufferSize) {
-	    bufferevent_write(bevent, msg, n);
-	    bufferevent_write(bevent, "\n", 1);
-	}
+inline void NetSession<UT>::send ( const char* msg, size_t n, bool priority ) const
+{
+    if ( priority || evbuffer_get_length ( bufferevent_get_output ( bevent ) ) < bufferSize ) {
+        bufferevent_write ( bevent, msg, n );
+        bufferevent_write ( bevent, "\n", 1 );
+    }
 }
 
 template<typename UT>
-inline void NetSession<UT>::error(const char* msg) {
-	if(mode == SESSION_DEAD) return;
-	evbuffer_add_printf(bufferevent_get_output(bevent), "ERR %s\n", msg);
+inline void NetSession<UT>::error ( const char* msg )
+{
+    if ( mode == SESSION_DEAD ) {
+        return;
+    }
+    evbuffer_add_printf ( bufferevent_get_output ( bevent ), "ERR %s\n", msg );
     close();
 }
 
 template<typename UT>
-inline IPv6 NetSession<UT>::getIp() {
-	IPv6 v6;
-	memcpy(v6.data(), &((sockaddr_in6*) &addr)->sin6_addr, 16);
-	return v6;
+inline IPv6 NetSession<UT>::getIp()
+{
+    IPv6 v6;
+    memcpy ( v6.data(), & ( ( sockaddr_in6* ) &addr )->sin6_addr, 16 );
+    return v6;
 }
 
 template<typename UT>
-inline void NetSession<UT>::close() {
-    if (mode == SESSION_NEW) {
+inline void NetSession<UT>::close()
+{
+    if ( mode == SESSION_NEW ) {
         mode = SESSION_DEAD;
-    } else if (mode == SESSION_ALIVE) {
+    } else if ( mode == SESSION_ALIVE ) {
         mode = SESSION_DYING;
-        bufferevent_disable(bevent, EV_READ);
-        bufferevent_flush(bevent, EV_WRITE, BEV_FINISHED);
+        bufferevent_disable ( bevent, EV_READ );
+        bufferevent_flush ( bevent, EV_WRITE, BEV_FINISHED );
 
-        if (evbuffer_get_length(bufferevent_get_output(bevent)) == 0) {
-            bufferevent_free(bevent);
+        if ( evbuffer_get_length ( bufferevent_get_output ( bevent ) ) == 0 ) {
+            bufferevent_free ( bevent );
             bevent = NULL;
             mode = SESSION_DEAD;
         } else {
-            bufferevent_set_timeouts(bevent, &DEAD_TIMEOUT, &DEAD_TIMEOUT);
-            bufferevent_setcb(bevent, NULL,
-                    // Write Callback
-                    [] (bufferevent *bev, void *ctx) {
-                        if (evbuffer_get_length(bufferevent_get_output(bev)) == 0) {
-                            NetSession *me = static_cast<NetSession*> (ctx);
-                            bufferevent_free(me->bevent);
-                            me->bevent = NULL;
-                            me->mode = SESSION_DEAD;
-                        }
-                    },
+            bufferevent_set_timeouts ( bevent, &DEAD_TIMEOUT, &DEAD_TIMEOUT );
+            bufferevent_setcb ( bevent, NULL,
+                                // Write Callback
+            [] ( bufferevent *bev, void *ctx ) {
+                if ( evbuffer_get_length ( bufferevent_get_output ( bev ) ) == 0 ) {
+                    NetSession *me = static_cast<NetSession*> ( ctx );
+                    bufferevent_free ( me->bevent );
+                    me->bevent = NULL;
+                    me->mode = SESSION_DEAD;
+                }
+            },
             // Error callback
-            [] (bufferevent *bev, short int which, void *ctx) {
-                NetSession *me = static_cast<NetSession*> (ctx);
-                bufferevent_free(me->bevent);
+            [] ( bufferevent *bev, short int which, void *ctx ) {
+                NetSession *me = static_cast<NetSession*> ( ctx );
+                bufferevent_free ( me->bevent );
                 me->bevent = NULL;
                 me->mode = SESSION_DEAD;
             }
-            , this);
+            , this );
         }
     }
 }
 
 template<typename UT>
-inline Net<UT>& NetSession<UT>::getServer() {
-	return *net;
+inline Net<UT>& NetSession<UT>::getServer()
+{
+    return *net;
 
 }
 
 template<typename UT>
-inline void NetSession<UT>::onReadable() {
+inline void NetSession<UT>::onReadable()
+{
     char *line;
     size_t n;
-    auto *input = bufferevent_get_input(bevent);
+    auto *input = bufferevent_get_input ( bevent );
 
-    while ((line = evbuffer_readln(input, &n, EVBUFFER_EOL_LF))) {
-    	currentCommand.set(line, n);
-    	net->fireCallback(*this, currentCommand);
+    while ( ( line = evbuffer_readln ( input, &n, EVBUFFER_EOL_LF ) ) ) {
+        currentCommand.set ( line, n );
+        net->fireCallback ( *this, currentCommand );
     }
 
-    if (evbuffer_get_length(input) >= maxLine) {
-        error("Line to long");
+    if ( evbuffer_get_length ( input ) >= maxLine ) {
+        error ( "Line to long" );
     }
 }
 
 template<typename UT>
-inline void NetSession<UT>::onWriteable() {
+inline void NetSession<UT>::onWriteable()
+{
 }
 
 template<typename UT>
-inline void NetSession<UT>::onError(short int which) {
+inline void NetSession<UT>::onError ( short int which )
+{
     close();
 
 }

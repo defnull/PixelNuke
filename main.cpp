@@ -15,27 +15,31 @@
 #include <cstring>
 
 #include "PixelServer.h"
-namespace {
-    class OptParser {
-    public:
-        OptParser(int argc, char ** argv): argc(argc), argv(argv) {}
-        bool get(const char* name, int &a) {
-            for(int i=1; i<argc-1; i++) {
-                if(strcmp(name, argv[i]))
-                    continue;
-                a = std::stoi(argv[i+1]);
-                return true;
+namespace
+{
+class OptParser
+{
+public:
+    OptParser(int argc, char ** argv): argc(argc), argv(argv) {}
+    bool get(const char* name, int &a) {
+        for(int i=1; i<argc-1; i++) {
+            if(strcmp(name, argv[i])) {
+                continue;
             }
-            return false;
+            a = std::stoi(argv[i+1]);
+            return true;
         }
-    private:
-        int argc;
-        char ** argv;
-    };
+        return false;
+    }
+private:
+    int argc;
+    char ** argv;
+};
 }
 
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     OptParser opt(argc, argv);
 
     int port = 0;

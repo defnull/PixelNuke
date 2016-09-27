@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   UILayer.h
  * Author: marc
  *
@@ -11,15 +11,16 @@
 #include "utils.h"
 #include <mutex>
 
-class UILayer : NonCopyable {
+class UILayer : NonCopyable
+{
 public:
-    UILayer(unsigned int texSize, bool alpha);
+    UILayer ( unsigned int texSize, bool alpha );
     ~UILayer();
     bool hasAlpha();
     void draw();
-    void setPx(unsigned int x, unsigned int y, unsigned int c);
-    unsigned int getPx(unsigned int x, unsigned int y);
-    void saveAs(const char * filename);
+    void setPx ( unsigned int x, unsigned int y, unsigned int c );
+    unsigned int getPx ( unsigned int x, unsigned int y );
+    void saveAs ( const char * filename );
     const GLuint texSize;
 private:
     size_t texMem;

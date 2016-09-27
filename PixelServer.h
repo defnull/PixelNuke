@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   PixelServer.h
  * Author: marc
  *
@@ -16,7 +16,8 @@
 
 class PixelCounter;
 
-class PixelServer : NonCopyable {
+class PixelServer : NonCopyable
+{
 public:
     PixelServer();
     ~PixelServer();

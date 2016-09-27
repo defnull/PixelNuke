@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   UIWindow.h
  * Author: marc
  *
@@ -14,7 +14,8 @@
 #include <mutex>
 #include "utils.h"
 
-class UIWindow : NonCopyable {
+class UIWindow : NonCopyable
+{
 public:
     UIWindow();
     virtual ~UIWindow();

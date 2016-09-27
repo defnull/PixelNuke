@@ -15,19 +15,22 @@
 #include <algorithm>      // std::max
 
 
-UIWindow::UIWindow() {
+UIWindow::UIWindow()
+{
 
-	glfwSetErrorCallback([](int code, const char * msg){
-		printf("GLFW Error: %d %s", code, msg);
-	});
+    glfwSetErrorCallback([](int code, const char * msg) {
+        printf("GLFW Error: %d %s", code, msg);
+    });
 
-    if (!glfwInit())
+    if (!glfwInit()) {
         throw std::runtime_error("EXIT: Could not initiate GLFW");
+    }
 
-    setupWindow(0, false);
+    setupWindow(false, 0);
 }
 
-void UIWindow::setupWindow(bool fsmode, size_t monid) {
+void UIWindow::setupWindow(bool fsmode, size_t monid)
+{
     std::lock_guard<std::mutex> lock(window_mutex);
     auto oldWindow = window;
 
@@ -58,11 +61,11 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
     }
 
     glfwSetWindowUserPointer(window, (void*) this);
-	glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK) {
-      throw std::runtime_error("EXIT: Glew initialization failed");
+        throw std::runtime_error("EXIT: Glew initialization failed");
     }
 
     //glShadeModel(GL_FLAT);            // shading mathod: GL_SMOOTH or GL_FLAT
@@ -74,28 +77,30 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_2D);
-	onResize();
+    onResize();
 
-	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-		UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
+    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
 
-		printf("KEY: %u %u %u %u\n", key, scancode, action, mods);
-		if(action != GLFW_PRESS) return;
+        printf("KEY: %u %u %u %u\n", key, scancode, action, mods);
+        if(action != GLFW_PRESS) {
+            return;
+        }
 
         if (key == GLFW_KEY_F11) {
             win->toggleFullscreen();
         } else if (key == GLFW_KEY_F12) {
             win->setupWindow(true, win->monitor_id + 1);
         } else if (key == GLFW_KEY_Q
-                || key == GLFW_KEY_ESCAPE) {
+                   || key == GLFW_KEY_ESCAPE) {
             win->stop();
         }
-	});
+    });
 
-	glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int w, int h) {
-		UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
-		win->onResize();
-	});
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int w, int h) {
+        UIWindow *win = static_cast<UIWindow*>(glfwGetWindowUserPointer(window));
+        win->onResize();
+    });
 
     if(oldWindow) {
         glfwDestroyWindow(oldWindow);
@@ -103,23 +108,28 @@ void UIWindow::setupWindow(bool fsmode, size_t monid) {
 
 }
 
-void UIWindow::toggleFullscreen() {
+void UIWindow::toggleFullscreen()
+{
     setFullscreen(!fullscreen);
 }
 
-void UIWindow::setFullscreen(bool fsmode) {
+void UIWindow::setFullscreen(bool fsmode)
+{
     setupWindow(fsmode, monitor_id);
 }
 
-void UIWindow::addLayer(UILayer *layer) {
+void UIWindow::addLayer(UILayer *layer)
+{
     layers.push_back(layer);
 }
 
-UIWindow::~UIWindow() {
+UIWindow::~UIWindow()
+{
     glfwTerminate();
 }
 
-void UIWindow::onResize() {
+void UIWindow::onResize()
+{
     glfwGetFramebufferSize(window, &width, &height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -128,32 +138,36 @@ void UIWindow::onResize() {
     draw();
 }
 
-void UIWindow::loop() {
+void UIWindow::loop()
+{
 
-	/* Loop until the user closes the window */
-	while (!glfwWindowShouldClose(window)) {
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window)) {
 
-		glfwSwapBuffers(window);
+        glfwSwapBuffers(window);
 
-		auto preDraw = glfwGetTime();
-		draw();
+        auto preDraw = glfwGetTime();
+        draw();
 
-		glfwPollEvents();
+        glfwPollEvents();
 
-		int wait = ((1.0f/maxfps)-(glfwGetTime()-preDraw))*1000;
-		if(wait > 10)
-			std::this_thread::sleep_for(std::chrono::milliseconds(wait));
-	}
+        int wait = ((1.0f/maxfps)-(glfwGetTime()-preDraw))*1000;
+        if(wait > 10) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(wait));
+        }
+    }
 
     glfwTerminate();
 }
 
-void UIWindow::stop() {
-	glfwSetWindowShouldClose(window, GL_TRUE);
+void UIWindow::stop()
+{
+    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 
-void UIWindow::draw() {
+void UIWindow::draw()
+{
     std::lock_guard<std::mutex> lock(draw_mutex);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -162,7 +176,7 @@ void UIWindow::draw() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     for(UILayer* layer: layers) {
-    	glPushMatrix();
+        glPushMatrix();
 
         int ts = layer->texSize;
         if(width > ts || height > ts) {
@@ -171,6 +185,6 @@ void UIWindow::draw() {
         }
 
         layer->draw();
-    	glPopMatrix();
+        glPopMatrix();
     }
 }

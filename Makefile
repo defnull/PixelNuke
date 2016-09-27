@@ -1,4 +1,4 @@
-.PHONY: init release debug clean
+.PHONY: init release debug clean pretty
 
 release: init
 	-mkdir release
@@ -10,9 +10,13 @@ debug: init
 	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd debug; make
 
+pretty:
+	astyle --options=none --style=1tbs *.cpp *.h
+	-rm -rf *.h.orig *.cpp.orig
+
 init:
 	git submodule init
 	git submodule update
 
 clean:
-	-rm -rf debug release
+	-rm -rf debug release build
