@@ -10,7 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <algorithm>
-#include "dep/lodepng/lodepng.h"
+#include "libs/lodepng.h"
 
 UILayer::UILayer ( unsigned int texSize, bool alpha ) :
     texSize ( texSize ), texFormat ( alpha ? GL_RGBA : GL_RGB )

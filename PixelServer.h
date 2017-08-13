@@ -14,7 +14,7 @@
 #include "utils.h"
 #include <map>
 
-class PixelCounter;
+class PixelSession;
 
 class PixelServer : NonCopyable
 {
@@ -28,8 +28,8 @@ private:
     UIWindow window;
     UILayer pxLayer;
     UILayer guiLayer;
-    Net<PixelCounter> server;
-    std::map<IPv6, std::shared_ptr<PixelCounter>> users;
+    Net<PixelSession> server;
+    std::map<IPv6, std::shared_ptr<PixelSession>> users;
     bool running;
 };
 

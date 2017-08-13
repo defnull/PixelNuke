@@ -121,6 +121,11 @@ inline void NetSession<UT>::send ( const char* msg, size_t n, bool priority ) co
     if ( priority || evbuffer_get_length ( bufferevent_get_output ( bevent ) ) < bufferSize ) {
         bufferevent_write ( bevent, msg, n );
         bufferevent_write ( bevent, "\n", 1 );
+    } else {
+        auto clientAddr = ( ( sockaddr_in6* ) & ( addr ) )->sin6_addr;
+        char ip[64];
+        inet_ntop ( PF_INET6, ( struct in_addr6* ) & ( clientAddr ), ip, sizeof ( ip )-1 );
+        printf ( "Network: Dropped line for %s (buffer full)\n", ip);
     }
 }
 
@@ -159,7 +164,7 @@ inline void NetSession<UT>::close()
         } else {
             bufferevent_set_timeouts ( bevent, &DEAD_TIMEOUT, &DEAD_TIMEOUT );
             bufferevent_setcb ( bevent, NULL,
-                                // Write Callback
+            // Write Callback
             [] ( bufferevent *bev, void *ctx ) {
                 if ( evbuffer_get_length ( bufferevent_get_output ( bev ) ) == 0 ) {
                     NetSession *me = static_cast<NetSession*> ( ctx );

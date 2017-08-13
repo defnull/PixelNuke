@@ -1,6 +1,2 @@
-build
-debug
-release
-PixelNuke.layout
-*.orig
-*.kate-swp
+*.o
+pixelnuke

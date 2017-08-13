@@ -25,6 +25,7 @@ public:
     void addLayer(UILayer*);
     void toggleFullscreen();
     void setFullscreen(bool);
+    void setTitle(std::string);
     int width=1124;
     int height=480;
 private:
@@ -32,6 +33,7 @@ private:
     void onResize();
     bool fullscreen = false;
     bool monitor_id = 0;
+    std::string title ="Pixelflut";
     std::mutex window_mutex;
     std::mutex draw_mutex;
     GLFWwindow* window = NULL;

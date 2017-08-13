@@ -1,22 +1,27 @@
-.PHONY: init release debug clean pretty
+CXXFLAGS = -g -std=c++11 -Wall -pedantic
+BIN = pixelnuke
+SRC = $(wildcard *.cpp)
+OBJ = $(SRC:%.cpp=%.o)
 
-release: init
-	-mkdir release || true
-	cd release; cmake -DCMAKE_BUILD_TYPE=Release ..
-	cd release; make
+LIBS = glfw3 gl glew libpng libevent libevent_pthreads
 
-debug: init
-	-mkdir debug || true
-	cd debug; cmake -DCMAKE_BUILD_TYPE=Debug ..
-	cd debug; make
+CXXFLAGS += $(shell pkg-config --cflags $(LIBS))
+LDLIBS += -pthread $(shell pkg-config --libs $(LIBS))
 
-pretty:
-	astyle --options=none --style=1tbs *.cpp *.h
-	-rm -rf *.h.orig *.cpp.orig
+.PHONY: run all
 
-init:
-	git submodule init
-	git submodule update
+run: all
+	./$(BIN)
+
+all: $(BIN)
+
+$(BIN): $(OBJ) libs/lodepng.o
+	$(CXX) $(LDFLAGS) -o $(BIN) $(OBJ) libs/lodepng.o $(LDLIBS)
+
+libs/lodepng.o: libs/lodepng.cpp
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	-rm -rf debug release build
+	-rm *.o $(BIN)
+

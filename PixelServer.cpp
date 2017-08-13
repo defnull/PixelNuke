@@ -14,14 +14,15 @@
 #include <arpa/inet.h>
 #include <chrono>
 
-struct PixelCounter: NonCopyable {
-    PixelCounter() {
+struct PixelSession: NonCopyable {
+    PixelSession() {
         gettimeofday ( &connected, NULL );
     };
 
     unsigned int pixel = 0;
     timeval connected;
     unsigned int lastpx[2] = {0,0};
+    UILayer* drawTarget;
 };
 
 namespace
@@ -55,18 +56,28 @@ PixelServer::PixelServer() :
     window.addLayer ( &guiLayer );
 
     server.setSessionCallbacks (
-    [&] ( NetSession<PixelCounter> & session ) {
+    [&] ( NetSession<PixelSession> & session ) {
         auto ip = session.getIp();
+
+        // Continue PixelSession is IP is known
         if ( users.find ( ip ) == users.end() ) {
-            users[ip] = std::make_shared<PixelCounter>();
+            users[ip] = std::make_shared<PixelSession>();
         }
         session.data = users[ip];
+        session.data->drawTarget = &pxLayer;
+        // TODO: remove old sessions
+
+        auto clientAddr = ( ( sockaddr_in6* ) & ( session.addr ) )->sin6_addr;
+        char ips[64];
+        inet_ntop ( PF_INET6, ( struct in_addr6* ) & ( clientAddr ), ips, sizeof ( ips )-1 );
+        printf ( "Network: New connection %s\n", ips);
+
     },
-    [&] ( NetSession<PixelCounter> & session ) {
+    [&] ( NetSession<PixelSession> & session ) {
     } );
 
     server.setCallback ( "PX",
-    [&] ( NetSession<PixelCounter> & session, PxCommand &cmd ) {
+    [&] ( NetSession<PixelSession> & session, PxCommand &cmd ) {
         session.data->pixel += 1;
         if ( cmd.nargs() == 3 ) {
             GLuint x, y;
@@ -90,12 +101,17 @@ PixelServer::PixelServer() :
             } else {
                 throw PxParseError ( "Color must have 3 or 4 byte components." );
             }
-            pxLayer.setPx ( x, y, c );
+            session.data->drawTarget->setPx ( x, y, c );
         }
     } );
 
+    server.setCallback ( "GUI",
+    [&] ( NetSession<PixelSession> & session, PxCommand &cmd ) {
+        session.data->drawTarget = &guiLayer;
+    } );
+
     server.setCallback ( "SIZE",
-    [&] ( NetSession<PixelCounter> & session, PxCommand &cmd ) {
+    [&] ( NetSession<PixelSession> & session, PxCommand &cmd ) {
         if ( cmd.nargs() > 1 ) {
             throw PxParseError ( "SIZE does not take any parameters." );
         }
@@ -105,7 +121,7 @@ PixelServer::PixelServer() :
     } );
 
     server.setCallback ( "HELP",
-    [&] ( NetSession<PixelCounter> & session, PxCommand &cmd ) {
+    [&] ( NetSession<PixelSession> & session, PxCommand &cmd ) {
         session.send (
             "HELP: == PIXELFLUT ==\n"
             "HELP: Line based ASCII protocol\n"
@@ -117,7 +133,7 @@ PixelServer::PixelServer() :
     } );
 
     server.setCallback ( "STAT",
-    [&] ( NetSession<PixelCounter> & session, PxCommand &cmd ) {
+    [&] ( NetSession<PixelSession> & session, PxCommand &cmd ) {
         for ( auto const & sess: session.getServer().getSessions() ) {
             auto addr = ( ( sockaddr_in6* ) & ( sess->addr ) )->sin6_addr;
             char ip[64];

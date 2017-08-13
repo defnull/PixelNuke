@@ -49,10 +49,10 @@ void UIWindow::setupWindow(bool fsmode, size_t monid)
         glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
         glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-        window = glfwCreateWindow(mode->width, mode->height, "Pixelflut", monitor, oldWindow);
+        window = glfwCreateWindow(mode->width, mode->height, title.c_str(), monitor, oldWindow);
     } else {
         fullscreen = false;
-        window = glfwCreateWindow(640, 480, "Pixelflut", NULL, oldWindow);
+        window = glfwCreateWindow(640, 480, title.c_str(), NULL, oldWindow);
     }
 
     if (!window) {
@@ -118,6 +118,12 @@ void UIWindow::setFullscreen(bool fsmode)
     setupWindow(fsmode, monitor_id);
 }
 
+void UIWindow::setTitle(std::string title)
+{
+    this->title = title;
+    glfwSetWindowTitle(window, title.c_str());
+}
+
 void UIWindow::addLayer(UILayer *layer)
 {
     layers.push_back(layer);
@@ -140,7 +146,6 @@ void UIWindow::onResize()
 
 void UIWindow::loop()
 {
-
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
 
