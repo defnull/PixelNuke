@@ -3,7 +3,7 @@ BIN = pixelnuke
 SRC = $(wildcard *.cpp)
 OBJ = $(SRC:%.cpp=%.o)
 
-LIBS = glfw3 gl glew libpng libevent libevent_pthreads
+LIBS = glfw3 gl glew libevent libevent_pthreads
 
 CXXFLAGS += $(shell pkg-config --cflags $(LIBS))
 LDLIBS += -pthread $(shell pkg-config --libs $(LIBS))
