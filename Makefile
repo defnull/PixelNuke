@@ -10,10 +10,10 @@ LDLIBS += -pthread $(shell pkg-config --libs $(LIBS))
 
 .PHONY: run all
 
+all: $(BIN)
+
 run: all
 	./$(BIN)
-
-all: $(BIN)
 
 $(BIN): $(OBJ) libs/lodepng.o
 	$(CXX) $(LDFLAGS) -o $(BIN) $(OBJ) libs/lodepng.o $(LDLIBS)
