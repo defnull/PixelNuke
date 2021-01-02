@@ -29,8 +29,7 @@
 
 # Building from source
 
-    $ sudo apt-get install build-essential
-    $ sudo apt-get install libevent-dev libglfw-dev libglew-dev
+    $ sudo apt-get install make g++ pkg-config libevent-dev libglfw3-dev libglew-dev
     $ make
     $ make run
 
