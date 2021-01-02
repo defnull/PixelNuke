@@ -84,13 +84,13 @@ inline NetSession<UT>::NetSession ( Net<UT>* net, evutil_socket_t sockfd ) : net
     bevent = bufferevent_socket_new ( this->net->getBase(), csockfd, BEV_OPT_CLOSE_ON_FREE );
 
     bufferevent_setcb ( bevent,
-    [&] ( bufferevent *bev, void *ctx ) {
+    [] ( bufferevent *bev, void *ctx ) {
         static_cast<NetSession*> ( ctx )->onReadable();
     },
-    [&] ( bufferevent *bev, void *ctx ) {
+    [] ( bufferevent *bev, void *ctx ) {
         static_cast<NetSession*> ( ctx )->onWriteable();
     },
-    [&] ( bufferevent *bev, short int which, void *ctx ) {
+    [] ( bufferevent *bev, short int which, void *ctx ) {
         static_cast<NetSession*> ( ctx )->onError ( which );
     }
     , this );
