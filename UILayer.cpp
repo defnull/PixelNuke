@@ -148,11 +148,12 @@ bool UILayer::hasAlpha()
 
 void UILayer::saveAs ( const char* filename )
 {
-    GLubyte tmp[texMem];
-    memcpy ( &tmp, texData, texMem );
+    GLubyte *tmp = new GLubyte[texMem];
+    memcpy ( tmp, texData, texMem );
     if ( hasAlpha() ) {
         lodepng_encode32_file ( filename, tmp, texSize, texSize );
     } else {
         lodepng_encode24_file ( filename, tmp, texSize, texSize );
     }
+    delete[] tmp;
 }
