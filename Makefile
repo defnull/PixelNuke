@@ -1,4 +1,4 @@
-CXXFLAGS = -g -std=c++11 -Wall -pedantic
+CXXFLAGS = -g -std=c++17 -Wall -pedantic
 BIN = pixelnuke
 SRC = $(wildcard *.cpp)
 OBJ = $(SRC:%.cpp=%.o)
@@ -19,9 +19,9 @@ $(BIN): $(OBJ) libs/lodepng.o
 	$(CXX) $(LDFLAGS) -o $(BIN) $(OBJ) libs/lodepng.o $(LDLIBS)
 
 libs/lodepng.o: libs/lodepng.cpp
-%.o: %.cpp
+%.o: %.cpp Makefile
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	-rm *.o $(BIN)
+	-rm $(BIN) *.o libs/*.o
 
